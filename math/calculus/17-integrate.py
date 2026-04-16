@@ -16,6 +16,8 @@ def poly_integral(poly, C=0):
     while len(res) > 1 and res[-1] == 0:
         res.pop()
 
-    res = [int(x) if isinstance(x, float) and x.is_integer() else x for x in res]
+    for i in range(len(res)):
+        if isinstance(res[i], float) and res[i].is_integer():
+            res[i] = int(res[i])
 
     return res
