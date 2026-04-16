@@ -1,0 +1,21 @@
+#!/usr/bin/env python3
+
+def poly_integral(poly, C=0):
+    if not isinstance(poly, list) or len(poly) == 0:
+        return None
+    if not isinstance(C, (int, float)):
+        return None
+    if not all(isinstance(c, (int, float)) for c in poly):
+        return None
+
+    res = [C]
+
+    for i, c in enumerate(poly):
+        res.append(c / (i + 1))
+
+    while len(res) > 1 and res[-1] == 0:
+        res.pop()
+
+    res = [int(x) if isinstance(x, float) and x.is_integer() else x for x in res]
+
+    return res
