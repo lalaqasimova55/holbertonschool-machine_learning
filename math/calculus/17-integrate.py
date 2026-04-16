@@ -1,6 +1,9 @@
 #!/usr/bin/env python3
+"""Polynomial integration module"""
+
 
 def poly_integral(poly, C=0):
+    """Compute the integral of a polynomial"""
     if not isinstance(poly, list) or len(poly) == 0:
         return None
     if not isinstance(C, (int, float)):
