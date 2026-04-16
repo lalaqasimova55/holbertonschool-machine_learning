@@ -13,15 +13,15 @@ def poly_derivative(poly):
 
     if (not isinstance(poly, list) or len(poly) == 0):
         return None
-    
+
     for c in poly:
         if not isinstance(c, (int, float)):
             return None
-    
+
     result = []
     for i in range(1, len(poly)):
         result.append(poly[i] * i)
-    
+
     if len(result) == 0:
         return [0]
 
