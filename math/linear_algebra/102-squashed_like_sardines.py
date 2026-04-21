@@ -9,26 +9,19 @@ def cat_matrices(mat1, mat2, axis=0):
     if type(mat1) != type(mat2):
         return None
 
-    # VECTOR CASE (1D LIST)
-    if isinstance(mat1, list) and isinstance(mat1[0], (int, float)):
-        if axis == 0:
-            return mat1 + mat2
-        return None
-
-    # BASE CASE (numbers)
+    # base case (numbers)
     if not isinstance(mat1, list):
-        return mat1
+        return mat1 + mat2
 
-    # axis = 0 → concat top level
-    if axis == 0:
-        if len(mat1) != len(mat2):
-            return None
-        return [cat_matrices(m1, m2, 0) for m1, m2 in zip(mat1, mat2)]
-
-    # deeper axes
+    # ensure same structure size
     if len(mat1) != len(mat2):
         return None
 
+    # axis == 0 → stack at top level
+    if axis == 0:
+        return [cat_matrices(m1, m2, 0) for m1, m2 in zip(mat1, mat2)]
+
+    # deeper axes
     result = []
     for i in range(len(mat1)):
         merged = cat_matrices(mat1[i], mat2[i], axis - 1)
