@@ -5,12 +5,7 @@
 def add_matrices(mat1, mat2):
     """Returns element-wise sum of two matrices or None if mismatch"""
 
-    # different types → invalid
-    if type(mat1) != type(mat2):
-        return None
-
-    # if both are lists → recurse
-    if isinstance(mat1, list):
+    if isinstance(mat1, list) and isinstance(mat2, list):
         if len(mat1) != len(mat2):
             return None
 
@@ -23,5 +18,7 @@ def add_matrices(mat1, mat2):
 
         return result
 
-    # base case (numbers)
-    return mat1 + mat2
+    if isinstance(mat1, (int, float)) and isinstance(mat2, (int, float)):
+        return mat1 + mat2
+
+    return None
