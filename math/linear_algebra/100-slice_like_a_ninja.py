@@ -2,9 +2,6 @@
 """Module that slices a numpy.ndarray along specific axes"""
 
 
-import numpy as np
-
-
 def np_slice(matrix, axes={}):
     """Returns a sliced version of a numpy array based on axes dictionary"""
     slices = [slice(None)] * matrix.ndim
