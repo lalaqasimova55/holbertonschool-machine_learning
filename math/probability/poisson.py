@@ -41,3 +41,31 @@ class Poisson:
 
         # PMF formula
         return (e ** (-self.lambtha) * (self.lambtha ** k)) / factorial
+
+    def cdf(self, k):
+        """Calculates the CDF for a given number of successes"""
+
+        # Convert k to int
+        k = int(k)
+
+        # Out of range
+        if k < 0:
+            return 0
+
+        # e approximation
+        e = 2.7182818285
+
+        cdf = 0
+
+        for i in range(0, k + 1):
+            # factorial
+            factorial = 1
+            for j in range(1, i + 1):
+                factorial *= j
+
+            # PMF(i)
+            pmf = (e ** (-self.lambtha) * (self.lambtha ** i)) / factorial
+
+            cdf += pmf
+
+        return cdf
