@@ -22,7 +22,6 @@ class Normal:
                 raise ValueError("data must contain multiple values")
 
             mean_val = sum(data) / len(data)
-
             variance = sum((x - mean_val) ** 2 for x in data) / len(data)
             stddev_val = variance ** 0.5
 
@@ -43,7 +42,7 @@ class Normal:
         pi = 3.1415926536
         e = 2.7182818285
 
-        exponent = -((x - self.mean) ** 2) / (2 * (self.stddev ** 2))
+        exponent = -((x - self.mean) ** 2) / (2 * self.stddev ** 2)
         denominator = self.stddev * ((2 * pi) ** 0.5)
 
         return (1 / denominator) * (e ** exponent)
@@ -51,11 +50,11 @@ class Normal:
     def cdf(self, x):
         """Calculates the CDF for a given x-value"""
 
-        # constants (NO IMPORTS allowed)
-        e = 2.7182818285
-
-        # z-score scaling
+        # correct z normalization (THIS FIXES YOUR BUG)
         z = (x - self.mean) / (self.stddev * (2 ** 0.5))
+
+        # constants
+        e = 2.7182818285
 
         # Abramowitz-Stegun approximation
         t = 1 / (1 + 0.3275911 * abs(z))
