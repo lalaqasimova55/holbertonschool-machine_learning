@@ -9,18 +9,35 @@ class Poisson:
         """Initialize Poisson distribution"""
 
         if data is None:
-            # Use given lambtha
             if lambtha <= 0:
                 raise ValueError("lambtha must be a positive value")
             self.lambtha = float(lambtha)
-
         else:
-            # Validate data
             if not isinstance(data, list):
                 raise TypeError("data must be a list")
 
             if len(data) < 2:
                 raise ValueError("data must contain multiple values")
 
-            # Calculate lambtha = mean of data
             self.lambtha = float(sum(data) / len(data))
+
+    def pmf(self, k):
+        """Calculates the PMF for a given number of successes"""
+
+        # Convert k to int
+        k = int(k)
+
+        # Out of range
+        if k < 0:
+            return 0
+
+        # Factorial
+        factorial = 1
+        for i in range(1, k + 1):
+            factorial *= i
+
+        # e approximation
+        e = 2.7182818285
+
+        # PMF formula
+        return (e ** (-self.lambtha) * (self.lambtha ** k)) / factorial
