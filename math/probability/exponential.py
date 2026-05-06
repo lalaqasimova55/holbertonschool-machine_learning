@@ -1,7 +1,13 @@
 #!/usr/bin/env python3
+"""Exponential distribution module"""
+
 
 class Exponential:
+    """Represents an exponential distribution"""
+
     def __init__(self, data=None, lambtha=1.):
+        """Initialize Exponential distribution"""
+
         if data is None:
             if lambtha <= 0:
                 raise ValueError("lambtha must be a positive value")
@@ -16,6 +22,8 @@ class Exponential:
             self.lambtha = float(1 / mean)
 
     def pdf(self, x):
+        """Calculates the PDF for a given time period"""
+
         if x < 0:
             return 0
 
