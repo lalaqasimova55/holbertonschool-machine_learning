@@ -51,8 +51,6 @@ class Normal:
     def cdf(self, x):
         """Calculates the CDF for a given x-value"""
 
-        # approximation without imports (erf approx)
-
         z = (x - self.mean) / (self.stddev * (2 ** 0.5))
 
         t = 1 / (1 + 0.3275911 * abs(z))
