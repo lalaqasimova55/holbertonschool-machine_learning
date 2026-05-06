@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
-"""Module for Normal distribution"""
+"""Normal distribution module"""
 
 
 class Normal:
-    """Class that represents a normal distribution"""
+    """Represents a normal distribution"""
 
     def __init__(self, data=None, mean=0., stddev=1.):
-        """Initialize the distribution"""
+        """Initialize Normal distribution"""
         if data is None:
             if stddev <= 0:
                 raise ValueError("stddev must be a positive value")
@@ -18,11 +18,12 @@ class Normal:
             if len(data) < 2:
                 raise ValueError("data must contain multiple values")
             
-            # Calculate mean of the data set
+            # Mean calculation
             self.mean = float(sum(data) / len(data))
             
-            # Calculate variance and standard deviation
-            variance = sum((x - self.mean) ** 2 for x in data) / len(data)
+            # Variance calculation (Population variance: sum / n)
+            diff_sq = [(x - self.mean) ** 2 for x in data]
+            variance = sum(diff_sq) / len(data)
             self.stddev = float(variance ** 0.5)
 
     def z_score(self, x):
@@ -34,7 +35,7 @@ class Normal:
         return (z * self.stddev) + self.mean
 
     def pdf(self, x):
-        """Calculates the value of the PDF for a given x-value"""
+        """Calculates the PDF for a given x-value"""
         pi = 3.1415926536
         e = 2.7182818285
         
@@ -44,15 +45,13 @@ class Normal:
         return (1 / denominator) * (e ** exponent)
 
     def cdf(self, x):
-        """Calculates the value of the CDF for a given x-value"""
-        # Constants for calculations
-        e = 2.7182818285
-        
-        # Value used for the error function (erf)
-        # Formula: 0.5 * (1 + erf( (x - mean) / (stddev * sqrt(2)) ))
+        """Calculates the CDF for a given x-value"""
+        # We use the approximation for erf(x) from Abramowitz and Stegun
+        # Erf argument is (x - mean) / (stddev * sqrt(2))
         value = (x - self.mean) / (self.stddev * (2 ** 0.5))
         
-        # Abramowitz & Stegun approximation constants for erf
+        # Constants
+        e = 2.7182818285
         a1 = 0.254829592
         a2 = -0.284496736
         a3 = 1.421413741
@@ -60,20 +59,13 @@ class Normal:
         a5 = 1.061405429
         p = 0.3275911
         
-        # Handle the sign for the approximation
         sign = 1 if value >= 0 else -1
         v_abs = abs(value)
         
-        # t calculation
-        t = 1.0 / (1.0 + p * v_abs)
+        t = 1 / (1 + p * v_abs)
         
-        # Polynomial approximation
-        poly = (((((a5 * t + a4) * t + a3) * t + a2) * t + a1) * t)
+        # erf approximation formula
+        erf = 1 - (((((a5 * t + a4) * t + a3) * t + a2) * t + a1) * t) * (e ** (-v_abs**2))
         
-        # erf(|value|)
-        erf_abs = 1.0 - poly * (e ** (-(v_abs**2)))
-        
-        # Correct erf(value) with original sign
-        erf_final = sign * erf_abs
-        
-        return 0.5 * (1 + erf_final)
+        # Final CDF formula: 0.5 * (1 + erf(value))
+        return 0.5 * (1 + sign * erf)
