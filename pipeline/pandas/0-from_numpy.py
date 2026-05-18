@@ -14,15 +14,8 @@ def from_numpy(array):
 
     Returns:
         The newly created pd.DataFrame
-    ```
-    # Sütunların sayını massivin formasına (shape) əsasən tapırıq
+    """
     num_cols = array.shape[1]
-
-    # ASCII dəyərlərindən istifadə edərək 'A'-dan başlayaraq lazımi sayda hərf generasiya edirik
-    # 'A' hərfinin ASCII kodu 65-dir
     columns = [chr(65 + i) for i in range(num_cols)]
-
-    # DataFrame-i yaradırıq və sütun adlarını təyin edirik
     df = pd.DataFrame(array, columns=columns)
-
     return df
