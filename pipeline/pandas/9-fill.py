@@ -3,15 +3,10 @@
 Defines a function that fills missing values in a DataFrame
 """
 
+
 def fill(df):
     """
     Cleans and fills missing values in the dataframe
-
-    Args:
-        df (pd.DataFrame): input dataframe
-
-    Returns:
-        pd.DataFrame: modified dataframe
     """
 
     # Remove Weighted_Price column
@@ -20,7 +15,7 @@ def fill(df):
     # Fill Close NaN with previous value
     df['Close'] = df['Close'].fillna(method='ffill')
 
-    # Fill Open, High, Low with Close in same row
+    # Fill Open, High, Low with Close
     df['Open'] = df['Open'].fillna(df['Close'])
     df['High'] = df['High'].fillna(df['Close'])
     df['Low'] = df['Low'].fillna(df['Close'])
