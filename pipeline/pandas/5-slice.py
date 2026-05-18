@@ -15,10 +15,6 @@ def slice(df):
     Returns:
         pd.DataFrame: The sliced DataFrame view.
     """
-    # Select the required columns first
     columns = ['High', 'Low', 'Close', 'Volume_(BTC)']
-    
-    # Use iloc to select every 60th row (step of 60)
     sliced_df = df[columns].iloc[::60]
-    
     return sliced_df
