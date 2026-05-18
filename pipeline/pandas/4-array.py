@@ -5,8 +5,6 @@ as a numpy.ndarray
 """
 
 
-
-
 def array(df):
     """
     Returns last 10 rows of High and Close columns as numpy.ndarray
