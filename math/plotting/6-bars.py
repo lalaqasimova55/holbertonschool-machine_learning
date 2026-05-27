@@ -1,20 +1,34 @@
 #!/usr/bin/env python3
+"""
+Module 6-bars
+Stacked bar chart of fruit quantities per person.
+"""
+
 import numpy as np
 import matplotlib.pyplot as plt
 
+
 def bars():
+    """
+    Plots stacked bar chart of fruits per person.
+    """
     np.random.seed(5)
+
     fruit = np.random.randint(0, 20, (4, 3))
+
     plt.figure(figsize=(6.4, 4.8))
 
     persons = ['Farrah', 'Fred', 'Felicia']
     x = np.arange(len(persons))
 
-    # stacked bars (bottom to top: apples, bananas, oranges, peaches)
     plt.bar(x, fruit[0], width=0.5, color='red', label='apples')
-    plt.bar(x, fruit[1], width=0.5, bottom=fruit[0], color='yellow', label='bananas')
-    plt.bar(x, fruit[2], width=0.5, bottom=fruit[0] + fruit[1], color='#ff8000', label='oranges')
-    plt.bar(x, fruit[3], width=0.5, bottom=fruit[0] + fruit[1] + fruit[2], color='#ffe5b4', label='peaches')
+    plt.bar(x, fruit[1], width=0.5, bottom=fruit[0],
+            color='yellow', label='bananas')
+    plt.bar(x, fruit[2], width=0.5, bottom=fruit[0] + fruit[1],
+            color='#ff8000', label='oranges')
+    plt.bar(x, fruit[3], width=0.5,
+            bottom=fruit[0] + fruit[1] + fruit[2],
+            color='#ffe5b4', label='peaches')
 
     plt.xticks(x, persons)
     plt.ylabel('Quantity of Fruit')
