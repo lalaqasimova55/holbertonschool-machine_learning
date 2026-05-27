@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+"""Plot a cubic function using matplotlib."""
+
 import numpy as np
 import matplotlib.pyplot as plt
 
