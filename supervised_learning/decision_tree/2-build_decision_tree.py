@@ -24,66 +24,40 @@ class Node:
 
     # ---------- PRINT HELPERS ----------
 
-    def _add_prefix(self, text, prefix):
+    def left_child_add_prefix(self, text):
+        """Adds standard prefix lines for a left child node."""
         lines = text.split("\n")
-        res = ""
-        for i, line in enumerate(lines):
-            if i == 0:
-                res += prefix + line + "\n"
-            else:
-                res += "| " + line + "\n"
-        return res
+        new_text = "    +--" + lines[0] + "\n"
+        for x in lines[1:]:
+            if x:
+                new_text += ("    |  " + x) + "\n"
+        return new_text
+
+    def right_child_add_prefix(self, text):
+        """Adds trailing indentation prefix lines for a right child node."""
+        lines = text.split("\n")
+        new_text = "    +--" + lines[0] + "\n"
+        for x in lines[1:]:
+            if x:
+                new_text += ("       " + x) + "\n"
+        return new_text
 
     # ---------- STRING FORMAT ----------
 
     def __str__(self):
-        name = "root" if self.is_root else "node"
-        base = f"{name} [feature={self.feature}, threshold={self.threshold}]"
+        """Returns the string representation of a node and its children."""
+        if self.is_root:
+            out = f"root [feature={self.feature}, threshold={self.threshold}]\n"
+        else:
+            out = f"node [feature={self.feature}, threshold={self.threshold}]\n"
 
-        left = ""
-        right = ""
+        if self.left_child is not None:
+            out += self.left_child_add_prefix(str(self.left_child))
 
-        if self.left_child:
-            left = self.left_child.__str__()
-            left = self._add_prefix(left, "+---> ")
+        if self.right_child is not None:
+            out += self.right_child_add_prefix(str(self.right_child))
 
-        if self.right_child:
-            right = self.right_child.__str__()
-            right = self._add_prefix(right, "+---> ")
-
-        if left and right:
-            return base + "\n" + left + right
-        if left:
-            return base + "\n" + left
-        if right:
-            return base + "\n" + right
-
-        return base
-
-    # ---------- TREE LOGIC ----------
-
-    def max_depth_below(self):
-        if self.left_child is None and self.right_child is None:
-            return self.depth
-
-        left = self.left_child.max_depth_below() if self.left_child else self.depth
-        right = self.right_child.max_depth_below() if self.right_child else self.depth
-
-        return max(self.depth, left, right)
-
-    def count_nodes_below(self, only_leaves=False):
-        if self.left_child is None and self.right_child is None:
-            return 1
-
-        if only_leaves:
-            left = self.left_child.count_nodes_below(True) if self.left_child else 0
-            right = self.right_child.count_nodes_below(True) if self.right_child else 0
-            return left + right
-
-        left = self.left_child.count_nodes_below(False) if self.left_child else 0
-        right = self.right_child.count_nodes_below(False) if self.right_child else 0
-
-        return 1 + left + right
+        return out
 
 
 class Leaf(Node):
@@ -98,12 +72,15 @@ class Leaf(Node):
         self.depth = depth
 
     def __str__(self):
-        return f"leaf [value={self.value}]"
+        """Returns string representation of a Leaf."""
+        return f"-> leaf [value={self.value}]"
 
     def max_depth_below(self):
+        """Returns max depth below leaf."""
         return self.depth
 
     def count_nodes_below(self, only_leaves=False):
+        """Counts nodes below leaf."""
         return 1
 
 
@@ -122,4 +99,5 @@ class Decision_Tree:
         self.split_criterion = split_criterion
 
     def __str__(self):
-        return str(self.root)
+        """Returns string representation of the tree starting from the root."""
+        return self.root.__str__()
