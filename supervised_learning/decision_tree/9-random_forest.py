@@ -32,8 +32,8 @@ class Random_Forest():
         # Massivi (n_trees, n_samples) ölçüsünə gətiririk
         preds = np.array(preds)
 
-        # Hər bir nümunə üçün ən çox təkrarlanan (mode) dəyəri tapırıq
-        # Transpose edirik ki, (n_samples, n_trees) olsun və sətir üzrə bincount edək
+        # Transpose edirik ki, (n_samples, n_trees) olsun
+        # və hər sətir üzrə bincount edək
         preds_t = preds.T
         majority_votes = np.array([
             np.argmax(np.bincount(sample_preds))
