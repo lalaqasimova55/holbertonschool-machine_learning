@@ -1,9 +1,21 @@
 #!/usr/bin/env python3
+"""
+Decision Tree module.
+
+Defines:
+    Node: tree node
+    Leaf: leaf node
+    Decision_Tree: tree container
+"""
 
 import numpy as np
 
 
 class Node:
+    """
+    Tree node class.
+    """
+
     def __init__(self, feature=None, threshold=None,
                  left_child=None, right_child=None,
                  is_root=False, depth=0):
@@ -18,7 +30,7 @@ class Node:
 
     def max_depth_below(self):
         """
-        Computes the maximum depth of the subtree rooted at this node.
+        Returns maximum depth of subtree.
         """
         if self.is_leaf or (
             self.left_child is None and self.right_child is None
@@ -38,6 +50,10 @@ class Node:
 
 
 class Leaf(Node):
+    """
+    Leaf node class.
+    """
+
     def __init__(self, value, depth=None):
         super().__init__()
         self.value = value
@@ -46,12 +62,16 @@ class Leaf(Node):
 
     def max_depth_below(self):
         """
-        Returns the depth of the leaf node.
+        Returns leaf depth.
         """
         return self.depth
 
 
 class Decision_Tree:
+    """
+    Decision Tree container class.
+    """
+
     def __init__(self, max_depth=10, min_pop=1,
                  seed=0, split_criterion="random", root=None):
         self.rng = np.random.default_rng(seed)
@@ -64,4 +84,7 @@ class Decision_Tree:
         self.predict = None
 
     def depth(self):
+        """
+        Returns tree depth.
+        """
         return self.root.max_depth_below()
