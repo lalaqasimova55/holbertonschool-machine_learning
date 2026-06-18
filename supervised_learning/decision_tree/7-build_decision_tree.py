@@ -1,16 +1,12 @@
 #!/usr/bin/env python3
 """
-Decision Tree printing, training and evaluation.
+Decision Tree using random split criterion.
 """
 
 import numpy as np
 
 
 class Node:
-    """
-    Decision tree internal node.
-    """
-
     def __init__(self, feature=None, threshold=None,
                  left_child=None, right_child=None,
                  is_root=False, depth=0):
@@ -47,10 +43,6 @@ class Node:
 
 
 class Leaf(Node):
-    """
-    Leaf node.
-    """
-
     def __init__(self, value, depth=None):
         super().__init__()
         self.value = value
@@ -65,10 +57,6 @@ class Leaf(Node):
 
 
 class Decision_Tree:
-    """
-    Decision tree container.
-    """
-
     def __init__(self, root=None, max_depth=10,
                  min_pop=1, seed=0,
                  split_criterion="random"):
@@ -83,6 +71,25 @@ class Decision_Tree:
 
     def count_nodes(self, only_leaves=False):
         return self.root.count_nodes_below(only_leaves)
+
+    # ---------------- FIXED PART ----------------
+    def random_split_criterion(self, node):
+        diff = 0
+
+        while diff == 0:
+            feature = self.rng.integers(0, self.explanatory.shape[1])
+
+            values = self.explanatory[:, feature][node.sub_population]
+            feature_min = np.min(values)
+            feature_max = np.max(values)
+
+            diff = feature_max - feature_min
+
+        x = self.rng.random()
+        threshold = (1 - x) * feature_min + x * feature_max
+
+        return feature, threshold
+    # --------------------------------------------
 
     def fit(self, explanatory, target, verbose=0):
         if self.split_criterion == "random":
@@ -103,8 +110,6 @@ class Decision_Tree:
             print(f"Number of leaves : {self.count_nodes(only_leaves=True)}")
             print(f"Accuracy on training data : "
                   f"{self.accuracy(self.explanatory, self.target)}")
-
-    # --- PLACEHOLDERS (from previous tasks assumed exist) ---
 
     def fit_node(self, node):
         node.feature, node.threshold = self.split_criterion(node)
