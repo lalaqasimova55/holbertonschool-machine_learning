@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 class Node:
     def __init__(self, feature=None, threshold=None, left_child=None, right_child=None, is_root=False, depth=0):
         self.feature = feature
@@ -20,7 +22,6 @@ class Node:
         Returns:
             int: The maximum depth value in the subtree.
         """
-
         if self.is_leaf or (self.left_child is None and self.right_child is None):
             return self.depth
 
