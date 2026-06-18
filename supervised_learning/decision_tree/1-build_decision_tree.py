@@ -1,8 +1,6 @@
 #!/usr/bin/env python3
 """
 Decision Tree module.
-
-Implements Node, Leaf and Decision_Tree classes.
 """
 
 import numpy as np
@@ -10,7 +8,7 @@ import numpy as np
 
 class Node:
     """
-    Represents an internal node in a decision tree.
+    Internal node of a decision tree.
     """
 
     def __init__(self, feature=None, threshold=None,
@@ -27,7 +25,7 @@ class Node:
 
     def max_depth_below(self):
         """
-        Returns the maximum depth in the subtree rooted at this node.
+        Returns max depth in subtree.
         """
         if self.is_leaf or (
             self.left_child is None and self.right_child is None
@@ -48,30 +46,36 @@ class Node:
     def count_nodes_below(self, only_leaves=False):
         """
         Counts nodes in subtree.
-
-        Args:
-            only_leaves (bool): if True, counts only leaves.
-
-        Returns:
-            int: number of nodes.
         """
         if self.is_leaf:
             return 1
 
         if only_leaves:
-            left = self.left_child.count_nodes_below(True) if self.left_child else 0
-            right = self.right_child.count_nodes_below(True) if self.right_child else 0
+            left = (
+                self.left_child.count_nodes_below(True)
+                if self.left_child else 0
+            )
+            right = (
+                self.right_child.count_nodes_below(True)
+                if self.right_child else 0
+            )
             return left + right
 
-        left = self.left_child.count_nodes_below(False) if self.left_child else 0
-        right = self.right_child.count_nodes_below(False) if self.right_child else 0
+        left = (
+            self.left_child.count_nodes_below(False)
+            if self.left_child else 0
+        )
+        right = (
+            self.right_child.count_nodes_below(False)
+            if self.right_child else 0
+        )
 
         return 1 + left + right
 
 
 class Leaf(Node):
     """
-    Leaf node of a decision tree.
+    Leaf node.
     """
 
     def __init__(self, value, depth=None):
@@ -82,26 +86,20 @@ class Leaf(Node):
 
     def max_depth_below(self):
         """
-        Returns depth of leaf.
+        Returns leaf depth.
         """
         return self.depth
 
     def count_nodes_below(self, only_leaves=False):
         """
-        Counts leaf node as 1.
-
-        Args:
-            only_leaves (bool): unused for leaf.
-
-        Returns:
-            int: 1
+        Leaf counts as 1.
         """
         return 1
 
 
 class Decision_Tree:
     """
-    Decision tree container class.
+    Decision tree class.
     """
 
     def __init__(self, max_depth=10, min_pop=1,
@@ -123,12 +121,6 @@ class Decision_Tree:
 
     def count_nodes(self, only_leaves=False):
         """
-        Counts nodes in the tree.
-
-        Args:
-            only_leaves (bool): if True counts only leaves.
-
-        Returns:
-            int: number of nodes.
+        Counts nodes in tree.
         """
-        return self.root.count_nodes_below(only_leaves=only_leaves)
+        return self.root.count_nodes_below(only_leaves)
