@@ -228,7 +228,7 @@ class Decision_Tree:
 
     def count_nodes(self, only_leaves=False):
         """Counts total nodes or optionally just leaves in the tree."""
-        return self.root.max_depth_below()
+        return self.root.count_nodes_below(only_leaves=only_leaves)
 
     def get_leaves(self):
         """Returns a list of all leaves in the tree."""
@@ -287,29 +287,22 @@ class Decision_Tree:
         sub_target = self.target[node.sub_population]
         classes = np.unique(self.target)
 
-        # Vectorized array sizing configurations (n, t, c)
-        # n = sub_population size, t = thresholds size, c = classes size
         n = sub_expl.size
-        t = thresholds.size
-        c = classes.size
 
-        # Broadcast across axes without explicit for loops
+        # Vectorized array sizing configurations (n, t, c)
         feat_val = sub_expl[:, np.newaxis, np.newaxis]
         thresh_val = thresholds[np.newaxis, :, np.newaxis]
         targ_val = sub_target[:, np.newaxis, np.newaxis]
         class_val = classes[np.newaxis, np.newaxis, :]
 
-        # Boolean configurations logic arrays
         Left_F = (feat_val > thresh_val) & (targ_val == class_val)
         Right_F = (feat_val <= thresh_val) & (targ_val == class_val)
 
-        # Cardinalities sums evaluation
         card_left_c = np.sum(Left_F, axis=0)
         card_right_c = np.sum(Right_F, axis=0)
         card_left = np.sum(feat_val > thresh_val, axis=0)
         card_right = np.sum(feat_val <= thresh_val, axis=0)
 
-        # Gini evaluations avoiding zero division
         with np.errstate(divide='ignore', invalid='ignore'):
             gini_l = 1 - np.sum((card_left_c / card_left) ** 2, axis=1)
             gini_r = 1 - np.sum((card_right_c / card_right) ** 2, axis=1)
@@ -357,6 +350,7 @@ class Decision_Tree:
 
     def fit_node(self, node):
         """Recursively trains a single node or flags it as a leaf."""
+        # Düzgün yarpaq (Leaf) qərarı və ssenari idarəetməsi
         if (node.depth == self.max_depth or
                 np.unique(self.target[node.sub_population]).size == 1 or
                 np.sum(node.sub_population) <= self.min_pop):
@@ -374,9 +368,6 @@ class Decision_Tree:
             node.sub_population,
             self.explanatory[:, node.feature] <= node.threshold
         )
-
-        if (np.sum(left_population) == 0 or np.sum(right_population) == 0):
-            return
 
         is_left_leaf = (
             np.sum(left_population) <= self.min_pop or
