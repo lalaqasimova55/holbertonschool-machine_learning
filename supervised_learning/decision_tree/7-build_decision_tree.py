@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Decision Tree using random split criterion.
+Decision Tree using Random split criterion (fixed version).
 """
 
 import numpy as np
@@ -72,24 +72,37 @@ class Decision_Tree:
     def count_nodes(self, only_leaves=False):
         return self.root.count_nodes_below(only_leaves)
 
-    # ---------------- FIXED PART ----------------
+    # ================= FIXED SAFE RANDOM SPLIT =================
     def random_split_criterion(self, node):
-        diff = 0
+        n_features = self.explanatory.shape[1]
 
-        while diff == 0:
-            feature = self.rng.integers(0, self.explanatory.shape[1])
+        # valid feature arama (variance > 0)
+        for _ in range(20):  # safety limit (timeout prevention)
+            feature = self.rng.integers(0, n_features)
 
             values = self.explanatory[:, feature][node.sub_population]
-            feature_min = np.min(values)
-            feature_max = np.max(values)
 
-            diff = feature_max - feature_min
+            if values.size == 0:
+                continue
 
-        x = self.rng.random()
-        threshold = (1 - x) * feature_min + x * feature_max
+            fmin = np.min(values)
+            fmax = np.max(values)
 
+            if fmax > fmin:
+                x = self.rng.random()
+                threshold = (1 - x) * fmin + x * fmax
+                return feature, threshold
+
+        # fallback (sonsuz loop engeli)
+        feature = 0
+        values = self.explanatory[:, feature][node.sub_population]
+
+        fmin = np.min(values)
+        fmax = np.max(values)
+
+        threshold = fmin
         return feature, threshold
-    # --------------------------------------------
+    # ===========================================================
 
     def fit(self, explanatory, target, verbose=0):
         if self.split_criterion == "random":
