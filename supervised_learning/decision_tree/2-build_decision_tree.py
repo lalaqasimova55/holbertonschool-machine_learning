@@ -27,11 +27,11 @@ class Node:
     def left_child_add_prefix(self, text):
         """Adds standard prefix lines for a left child node."""
         lines = text.split("\n")
-        # Ensure it turns "+--" into "+---> " or maps correctly
         new_text = "    +---> " + lines[0] + "\n"
         for x in lines[1:]:
             if x:
-                new_text += ("    |      " if x.startswith(" ") else "    |  " + x) + "\n"
+                pfx = "    |      " if x.startswith(" ") else "    |  "
+                new_text += (pfx + x) + "\n"
         return new_text
 
     def right_child_add_prefix(self, text):
@@ -40,7 +40,8 @@ class Node:
         new_text = "    +---> " + lines[0] + "\n"
         for x in lines[1:]:
             if x:
-                new_text += ("           " if x.startswith(" ") else "       " + x) + "\n"
+                pfx = "           " if x.startswith(" ") else "       "
+                new_text += (pfx + x) + "\n"
         return new_text
 
     # ---------- STRING FORMAT ----------
@@ -48,15 +49,16 @@ class Node:
     def __str__(self):
         """Returns the string representation of a node and its children."""
         if self.is_root:
-            out = f"root [feature={self.feature}, threshold={self.threshold}]\n"
+            out = (f"root [feature={self.feature}, "
+                   f"threshold={self.threshold}]\n")
         else:
             out = f"node [feature={self.feature}, threshold={self.threshold}]"
 
         if self.left_child is not None:
-            # If it's root, we don't indent the initial layer extra
             left_str = str(self.left_child)
             if self.is_root:
-                out += "    +---> " + left_str.replace("\n", "\n    |  ") + "\n"
+                out += ("    +---> " +
+                        left_str.replace("\n", "\n    |  ") + "\n")
             else:
                 lines = left_str.split("\n")
                 out += "\n    +---> " + lines[0]
@@ -67,8 +69,8 @@ class Node:
         if self.right_child is not None:
             right_str = str(self.right_child)
             if self.is_root:
-                # Remove trailing pipe context for the right-most tree branch
-                out += "    +---> " + right_str.replace("\n", "\n       ") + "\n"
+                out += ("    +---> " +
+                        right_str.replace("\n", "\n       ") + "\n")
             else:
                 lines = right_str.split("\n")
                 out += "\n    +---> " + lines[0]
@@ -91,7 +93,7 @@ class Leaf(Node):
         self.depth = depth
 
     def __str__(self):
-        """Returns string representation of a Leaf matching standard node output."""
+        """Returns string representation of a Leaf."""
         return f"leaf [value={self.value}]"
 
     def max_depth_below(self):
@@ -118,5 +120,5 @@ class Decision_Tree:
         self.split_criterion = split_criterion
 
     def __str__(self):
-        """Returns string representation of the tree starting from the root."""
+        """Returns string representation of the tree from the root."""
         return self.root.__str__() + "\n"
