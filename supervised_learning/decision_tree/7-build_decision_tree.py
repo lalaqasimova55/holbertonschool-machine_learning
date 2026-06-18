@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Decision Tree complete training and visualization module.
+Decision Tree printing, leaf retrieval, bounds, indicators, and training.
 """
 
 import numpy as np
@@ -284,30 +284,27 @@ class Decision_Tree:
         self.update_predict()
 
         if verbose == 1:
-            print(f"  Training finished.\n"
-                  f"- Depth                     : {self.depth()}\n"
-                  f"- Number of nodes           : {self.count_nodes()}\n"
-                  f"- Number of leaves          : "
+            print(f"Training finished.\n"
+                  f"Depth : {self.depth()}\n"
+                  f"Number of nodes : {self.count_nodes()}\n"
+                  f"Number of leaves : "
                   f"{self.count_nodes(only_leaves=True)}\n"
-                  f"- Accuracy on training data : "
+                  f"Accuracy on training data : "
                   f"{self.accuracy(self.explanatory, self.target)}")
 
     def fit_node(self, node):
         """Recursively trains a single node or flags it as a leaf."""
         node.feature, node.threshold = self.split_criterion(node)
 
-        # Left goes strictly greater than threshold
         left_population = np.logical_and(
             node.sub_population,
             self.explanatory[:, node.feature] > node.threshold
         )
-        # Right goes less than or equal to threshold
         right_population = np.logical_and(
             node.sub_population,
             self.explanatory[:, node.feature] <= node.threshold
         )
 
-        # Checking left leaf conditions
         is_left_leaf = (
             np.sum(left_population) < self.min_pop or
             node.depth + 1 == self.max_depth or
@@ -320,7 +317,6 @@ class Decision_Tree:
             node.left_child = self.get_node_child(node, left_population)
             self.fit_node(node.left_child)
 
-        # Checking right leaf conditions
         is_right_leaf = (
             np.sum(right_population) < self.min_pop or
             node.depth + 1 == self.max_depth or
@@ -335,7 +331,6 @@ class Decision_Tree:
 
     def get_leaf_child(self, node, sub_population):
         """Creates and configures a terminal leaf node child."""
-        # Dominant class value using plural voting count
         value = np.argmax(np.bincount(self.target[sub_population]))
         leaf_child = Leaf(value)
         leaf_child.depth = node.depth + 1
