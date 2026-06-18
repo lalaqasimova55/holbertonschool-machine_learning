@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Decision Tree implementation (safe recursion fix included).
+Decision Tree - full implementation (Holberton final version)
 """
 
 import numpy as np
@@ -67,6 +67,11 @@ class Node:
             if c:
                 c.update_bounds_below()
 
+    def pred(self, x):
+        if x[self.feature] > self.threshold:
+            return self.left_child.pred(x)
+        return self.right_child.pred(x)
+
 
 class Leaf(Node):
     def __init__(self, value, depth=None):
@@ -87,6 +92,9 @@ class Leaf(Node):
     def update_bounds_below(self):
         return
 
+    def pred(self, x):
+        return self.value
+
 
 class Decision_Tree:
     def __init__(self, root=None, max_depth=10,
@@ -97,6 +105,14 @@ class Decision_Tree:
         self.max_depth = max_depth
         self.min_pop = min_pop
         self.split_criterion = split_criterion
+
+    # ================= REQUIRED FIX =================
+    def pred(self, x):
+        return self.root.pred(x)
+
+    def predict(self, X):
+        return np.array([self.pred(x) for x in X])
+    # ===============================================
 
     def depth(self):
         return self.root.max_depth_below()
@@ -137,7 +153,7 @@ class Decision_Tree:
         self.update_bounds()
 
         if verbose == 1:
-            print("Training finished.")
+            print("Training finished.\n")
             print(f"Depth : {self.depth()}")
             print(f"Number of nodes : {self.count_nodes()}")
             print(f"Number of leaves : {self.count_nodes(True)}")
@@ -146,47 +162,44 @@ class Decision_Tree:
 
     def fit_node(self, node):
 
-        # 🔴 STOP CONDITION (FIX TIMEOUT)
         if np.sum(node.sub_population) == 0:
             node.is_leaf = True
-            node.left_child = None
-            node.right_child = None
             return
 
         node.feature, node.threshold = self.split_criterion(node)
 
-        left_population = np.logical_and(
+        left_pop = np.logical_and(
             node.sub_population,
             self.explanatory[:, node.feature] > node.threshold
         )
 
-        right_population = np.logical_and(
+        right_pop = np.logical_and(
             node.sub_population,
             self.explanatory[:, node.feature] <= node.threshold
         )
 
         # LEFT
-        if (np.sum(left_population) < self.min_pop or
+        if (np.sum(left_pop) < self.min_pop or
             node.depth + 1 == self.max_depth or
-            np.unique(self.target[left_population]).size == 1):
+            np.unique(self.target[left_pop]).size == 1):
 
-            value = np.argmax(np.bincount(self.target[left_population]))
+            value = np.argmax(np.bincount(self.target[left_pop]))
             node.left_child = Leaf(value, node.depth + 1)
         else:
             node.left_child = Node(depth=node.depth + 1)
-            node.left_child.sub_population = left_population
+            node.left_child.sub_population = left_pop
             self.fit_node(node.left_child)
 
         # RIGHT
-        if (np.sum(right_population) < self.min_pop or
+        if (np.sum(right_pop) < self.min_pop or
             node.depth + 1 == self.max_depth or
-            np.unique(self.target[right_population]).size == 1):
+            np.unique(self.target[right_pop]).size == 1):
 
-            value = np.argmax(np.bincount(self.target[right_population]))
+            value = np.argmax(np.bincount(self.target[right_pop]))
             node.right_child = Leaf(value, node.depth + 1)
         else:
             node.right_child = Node(depth=node.depth + 1)
-            node.right_child.sub_population = right_population
+            node.right_child.sub_population = right_pop
             self.fit_node(node.right_child)
 
     def accuracy(self, X, y):
