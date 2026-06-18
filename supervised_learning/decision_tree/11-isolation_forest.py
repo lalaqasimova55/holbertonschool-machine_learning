@@ -27,7 +27,7 @@ class Isolation_Random_Forest():
         return predictions.mean(axis=0)
 
     def fit(self, explanatory, n_trees=100, verbose=0):
-        """Fits multiple isolation random trees to build the forest ensemble."""
+        """Fits multiple isolation random trees to build the forest."""
         self.explanatory = explanatory
         self.numpy_preds = []
         depths = []
@@ -51,10 +51,10 @@ class Isolation_Random_Forest():
                   f"{np.array(leaves).mean()}")
 
     def suspects(self, explanatory, n_suspects):
-        """Returns the n_suspects rows that have the smallest mean depth."""
+        """Returns the n_suspects rows that have smallest mean depth."""
         depths = self.predict(explanatory)
 
-        # Ortalama dərinliyi ən kiçikdən böyüyə doğru sıralayan indeksləri tapırıq
+        # Ortalama dərinliyi ən kiçikdən böyüyə doğru sıralayırıq
         sorted_indices = np.argsort(depths)
 
         # Ən kiçik n_suspects sayda indeksi seçirik
