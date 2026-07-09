@@ -1,15 +1,20 @@
 #!/usr/bin/env python3
-"""Defines a neural network with one hidden layer."""
+"""
+Defines a neural network with one hidden layer.
+"""
 
 import numpy as np
 
 
 class NeuralNetwork:
-    """Neural network with one hidden layer performing binary classification."""
+    """
+    Defines a neural network with one hidden layer
+    performing binary classification.
+    """
 
     def __init__(self, nx, nodes):
         """
-        Class constructor.
+        Initialize the neural network.
 
         Args:
             nx (int): Number of input features.
@@ -25,12 +30,10 @@ class NeuralNetwork:
         if nodes < 1:
             raise ValueError("nodes must be a positive integer")
 
-        # Hidden layer
         self.W1 = np.random.randn(nodes, nx)
         self.b1 = np.zeros((nodes, 1))
         self.A1 = 0
 
-        # Output neuron
         self.W2 = np.random.randn(1, nodes)
         self.b2 = 0
         self.A2 = 0
