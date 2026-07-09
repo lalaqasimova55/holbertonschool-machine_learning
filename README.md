@@ -30,4 +30,4 @@ This project is part of my learning process. I am improving step by step and pra
 ---
 
 Happy coding!
-![Project Workflow](workflowdiagram.gif)
+![Project Workflow](diagram.gif)
