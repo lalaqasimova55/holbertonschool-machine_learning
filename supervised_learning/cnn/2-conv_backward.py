@@ -43,7 +43,6 @@ def conv_backward(dZ, A_prev, W, b, padding="same", stride=(1, 1)):
     for i in range(h_new):
         for j in range(w_new):
             for k in range(c_new):
-                # Isolate the current step window slice
                 h_start = i * sh
                 h_end = h_start + kh
                 w_start = j * sw
@@ -51,16 +50,14 @@ def conv_backward(dZ, A_prev, W, b, padding="same", stride=(1, 1)):
 
                 a_slice = padded_A[:, h_start:h_end, w_start:w_end, :]
 
-                # Accumulate gradients for dA_prev (padded version)
-                dA_prev_padded[
-                    :, h_start:h_end, w_start:w_end, :
-                ] += W[..., k] * dZ[:, i, j, k, np.newaxis, np.newaxis, np.newaxis]
+                # Extract and expand value to keep lines short
+                dz_val = dZ[:, i, j, k, np.newaxis, np.newaxis, np.newaxis]
 
-                # Accumulate gradients for dW
-                dW[..., k] += np.sum(
-                    a_slice * dZ[:, i, j, k, np.newaxis, np.newaxis, np.newaxis],
-                    axis=0
+                # Accumulate gradients
+                dA_prev_padded[:, h_start:h_end, w_start:w_end, :] += (
+                    W[..., k] * dz_val
                 )
+                dW[..., k] += np.sum(a_slice * dz_val, axis=0)
 
     # Slice out the padding to get the actual dA_prev
     if ph > 0 and pw > 0:
