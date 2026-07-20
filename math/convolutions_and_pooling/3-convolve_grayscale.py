@@ -6,7 +6,7 @@ import numpy as np
 
 def convolve_grayscale(images, kernel, padding='same', stride=(1, 1)):
     """
-    Performs convolution on grayscale images.
+    Performs a convolution on grayscale images.
 
     Args:
         images: numpy.ndarray (m, h, w)
@@ -23,14 +23,14 @@ def convolve_grayscale(images, kernel, padding='same', stride=(1, 1)):
     sh, sw = stride
 
     if padding == 'same':
-        ph = int(((h - 1) * sh + kh - h) / 2)
-        pw = int(((w - 1) * sw + kw - w) / 2)
+        ph = ((h - 1) * sh + kh - h) // 2
+        pw = ((w - 1) * sw + kw - w) // 2
 
     elif padding == 'valid':
         ph = 0
         pw = 0
 
-    elif isinstance(padding, tuple):
+    else:
         ph, pw = padding
 
     padded = np.pad(
@@ -39,13 +39,13 @@ def convolve_grayscale(images, kernel, padding='same', stride=(1, 1)):
         mode='constant'
     )
 
-    new_h = ((h + 2 * ph - kh) // sh) + 1
-    new_w = ((w + 2 * pw - kw) // sw) + 1
+    output_h = ((h + 2 * ph - kh) // sh) + 1
+    output_w = ((w + 2 * pw - kw) // sw) + 1
 
-    output = np.zeros((m, new_h, new_w))
+    output = np.zeros((m, output_h, output_w))
 
-    for i in range(new_h):
-        for j in range(new_w):
+    for i in range(output_h):
+        for j in range(output_w):
             output[:, i, j] = np.sum(
                 padded[
                     :,
