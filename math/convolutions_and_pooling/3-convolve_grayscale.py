@@ -23,8 +23,9 @@ def convolve_grayscale(images, kernel, padding='same', stride=(1, 1)):
     sh, sw = stride
 
     if padding == 'same':
-        ph = ((h - 1) * sh + kh - h) // 2
-        pw = ((w - 1) * sw + kw - w) // 2
+        # Use np.ceil to ensure odd numbers round up properly
+        ph = int(np.ceil(((h - 1) * sh + kh - h) / 2))
+        pw = int(np.ceil(((w - 1) * sw + kw - w) / 2))
 
     elif padding == 'valid':
         ph = 0
