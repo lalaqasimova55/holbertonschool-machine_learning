@@ -1,21 +1,18 @@
 #!/usr/bin/env python3
-"""
-Performs convolution on grayscale images
-"""
+"""Performs convolution on grayscale images."""
 
 import numpy as np
 
 
-def convolve_grayscale(images, kernel, padding='same',
-                       stride=(1, 1)):
+def convolve_grayscale(images, kernel, padding='same', stride=(1, 1)):
     """
-    Performs a convolution on grayscale images
+    Performs convolution on grayscale images.
 
     Args:
         images: numpy.ndarray (m, h, w)
         kernel: numpy.ndarray (kh, kw)
-        padding: 'same', 'valid' or tuple(ph, pw)
-        stride: tuple(sh, sw)
+        padding: 'same', 'valid', or tuple
+        stride: tuple (sh, sw)
 
     Returns:
         numpy.ndarray containing convolved images
@@ -26,8 +23,8 @@ def convolve_grayscale(images, kernel, padding='same',
     sh, sw = stride
 
     if padding == 'same':
-        ph = ((h - 1) * sh + kh - h) // 2
-        pw = ((w - 1) * sw + kw - w) // 2
+        ph = int(((h - 1) * sh + kh - h) / 2)
+        pw = int(((w - 1) * sw + kw - w) / 2)
 
     elif padding == 'valid':
         ph = 0
@@ -36,10 +33,7 @@ def convolve_grayscale(images, kernel, padding='same',
     elif isinstance(padding, tuple):
         ph, pw = padding
 
-    else:
-        raise ValueError("Invalid padding")
-
-    images_pad = np.pad(
+    padded = np.pad(
         images,
         ((0, 0), (ph, ph), (pw, pw)),
         mode='constant'
@@ -52,15 +46,12 @@ def convolve_grayscale(images, kernel, padding='same',
 
     for i in range(new_h):
         for j in range(new_w):
-
-            region = images_pad[
-                :,
-                i * sh:i * sh + kh,
-                j * sw:j * sw + kw
-            ]
-
             output[:, i, j] = np.sum(
-                region * kernel,
+                padded[
+                    :,
+                    i * sh:i * sh + kh,
+                    j * sw:j * sw + kw
+                ] * kernel,
                 axis=(1, 2)
             )
 
