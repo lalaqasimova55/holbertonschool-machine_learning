@@ -1,46 +1,67 @@
 #!/usr/bin/env python3
+"""
+Performs convolution on grayscale images
+"""
+
 import numpy as np
 
 
-def dropout_gradient_descent(Y, weights, cache, alpha, keep_prob, L):
+def convolve_grayscale(images, kernel, padding='same',
+                       stride=(1, 1)):
     """
-    Updates the weights and biases of a neural network with dropout
-    using gradient descent
+    Performs a convolution on grayscale images
+
+    Args:
+        images: numpy.ndarray (m, h, w)
+        kernel: numpy.ndarray (kh, kw)
+        padding: 'same', 'valid' or tuple(ph, pw)
+        stride: tuple(sh, sw)
+
+    Returns:
+        numpy.ndarray containing convolved images
     """
 
-    m = Y.shape[1]
-    dz = {}
+    m, h, w = images.shape
+    kh, kw = kernel.shape
+    sh, sw = stride
 
-    # Output layer
-    A = cache['A' + str(L)]
-    dz['dz' + str(L)] = A - Y
+    if padding == 'same':
+        ph = ((h - 1) * sh + kh - h) // 2
+        pw = ((w - 1) * sw + kw - w) // 2
 
-    for layer in range(L, 0, -1):
-        A_prev = cache['A' + str(layer - 1)]
+    elif padding == 'valid':
+        ph = 0
+        pw = 0
 
-        dW = np.matmul(dz['dz' + str(layer)],
-                       A_prev.T) / m
+    elif isinstance(padding, tuple):
+        ph, pw = padding
 
-        db = np.sum(dz['dz' + str(layer)],
-                    axis=1,
-                    keepdims=True) / m
+    else:
+        raise ValueError("Invalid padding")
 
-        weights['W' + str(layer)] -= alpha * dW
-        weights['b' + str(layer)] -= alpha * db
+    images_pad = np.pad(
+        images,
+        ((0, 0), (ph, ph), (pw, pw)),
+        mode='constant'
+    )
 
-        if layer > 1:
-            W = weights['W' + str(layer)]
+    new_h = ((h + 2 * ph - kh) // sh) + 1
+    new_w = ((w + 2 * pw - kw) // sw) + 1
 
-            dz_prev = np.matmul(W.T,
-                                dz['dz' + str(layer)])
+    output = np.zeros((m, new_h, new_w))
 
-            A_prev = cache['A' + str(layer - 1)]
+    for i in range(new_h):
+        for j in range(new_w):
 
-            dz_prev = dz_prev * (1 - np.square(A_prev))
+            region = images_pad[
+                :,
+                i * sh:i * sh + kh,
+                j * sw:j * sw + kw
+            ]
 
-            # Apply dropout mask
-            D = cache['D' + str(layer - 1)]
-            dz_prev *= D
-            dz_prev /= keep_prob
+            output[:, i, j] = np.sum(
+                region * kernel,
+                axis=(1, 2)
+            )
 
-            dz['dz' + str(layer - 1)] = dz_prev
+    return output
