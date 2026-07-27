@@ -1,40 +1,34 @@
 #!/usr/bin/env python3
-"""Batch normalization"""
+"""Batch normalization layer creation."""
 
 import tensorflow as tf
 
 
 def create_batch_norm_layer(prev, n, activation):
-    """
-    Creates a batch normalization layer.
-    
+    """Creates a batch normalization layer in TensorFlow.
+
     Args:
-        prev: Tensor representing the activated output of the previous layer
-        n: Integer, number of nodes in the layer to be created
-        activation: Activation function that should be used on the output
-        
+        prev: activated output of the previous layer
+        n: number of nodes in the layer to be created
+        activation: activation function to be used on the output
+
     Returns:
         The activated output for the layer
     """
     initializer = tf.keras.initializers.VarianceScaling(
-        scale=2.0,
         mode='fan_avg'
     )
 
-    # Dense layer before BN (use_bias=False if BN provides offset)
-    x = tf.keras.layers.Dense(
+    dense = tf.keras.layers.Dense(
         units=n,
-        kernel_initializer=initializer,
-        use_bias=False
+        kernel_initializer=initializer
     )(prev)
 
-    # Batch Normalization prior to activation
-    x = tf.keras.layers.BatchNormalization(
+    batch_norm = tf.keras.layers.BatchNormalization(
         epsilon=1e-7
-    )(x)
+    )(dense)
 
-    # Apply activation function LAST
-    if activation is not None:
-        x = activation(x)
+    if activation is None:
+        return batch_norm
 
-    return x
+    return activation(batch_norm)
