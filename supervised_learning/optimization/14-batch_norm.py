@@ -1,14 +1,12 @@
 #!/usr/bin/env python3
-"""
-Creates a batch normalization layer for a neural network
-"""
+"""Batch Normalization"""
 
 import tensorflow as tf
 
 
 def create_batch_norm_layer(prev, n, activation):
     """
-    Creates a batch normalization layer.
+    Creates a batch normalization layer for a neural network.
 
     Args:
         prev: Activated output of the previous layer
@@ -16,21 +14,19 @@ def create_batch_norm_layer(prev, n, activation):
         activation: Activation function
 
     Returns:
-        The activated output tensor
+        Activated output tensor
     """
-    initializer = tf.keras.initializers.VarianceScaling(mode='fan_avg')
+    init = tf.keras.initializers.VarianceScaling(mode='fan_avg')
 
-    dense = tf.keras.layers.Dense(
+    x = tf.keras.layers.Dense(
         units=n,
-        kernel_initializer=initializer
+        kernel_initializer=init
     )(prev)
 
-    batch_norm = tf.keras.layers.BatchNormalization(
-        axis=-1,
-        momentum=0.99,
+    x = tf.keras.layers.BatchNormalization(
         epsilon=1e-7,
-        beta_initializer=tf.keras.initializers.Zeros(),
-        gamma_initializer=tf.keras.initializers.Ones()
-    )(dense)
+        beta_initializer='zeros',
+        gamma_initializer='ones'
+    )(x)
 
-    return activation(batch_norm)
+    return activation(x)
