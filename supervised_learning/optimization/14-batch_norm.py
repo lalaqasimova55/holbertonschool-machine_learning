@@ -19,14 +19,20 @@ def create_batch_norm_layer(prev, n, activation):
         mode='fan_avg'
     )
 
-    dense = tf.keras.layers.Dense(
+    layer = tf.keras.layers.Dense(
         units=n,
-        kernel_initializer=initializer
+        kernel_initializer=initializer,
+        use_bias=False
     )(prev)
 
+    gamma = tf.ones_initializer()
+    beta = tf.zeros_initializer()
+
     batch_norm = tf.keras.layers.BatchNormalization(
-        epsilon=1e-7
-    )(dense)
+        epsilon=1e-7,
+        gamma_initializer=gamma,
+        beta_initializer=beta
+    )(layer)
 
     if activation is None:
         return batch_norm
