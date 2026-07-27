@@ -1,40 +1,31 @@
 #!/usr/bin/env python3
-"""Batch normalization layer creation."""
-
+"""Defines a function that creates a batch normalization layer"""
 import tensorflow as tf
 
 
 def create_batch_norm_layer(prev, n, activation):
-    """Creates a batch normalization layer in TensorFlow.
-
-    Args:
-        prev: activated output of the previous layer
-        n: number of nodes in the layer to be created
-        activation: activation function to be used on the output
-
-    Returns:
-        The activated output for the layer
     """
-    initializer = tf.keras.initializers.VarianceScaling(
-        mode='fan_avg'
-    )
+    Creates a batch normalization layer for a neural network in tensorflow
 
-    layer = tf.keras.layers.Dense(
-        units=n,
-        kernel_initializer=initializer,
-        use_bias=False
-    )(prev)
+    prev is the activated output of the previous layer
+    n is the number of nodes in the layer to be created
+    activation is the activation function that should be used
+        on the output of the layer
 
-    gamma = tf.ones_initializer()
-    beta = tf.zeros_initializer()
+    Returns: a tensor of the activated output for the layer
+    """
+    init = tf.keras.initializers.VarianceScaling(mode='fan_avg')
+    dense = tf.keras.layers.Dense(units=n, kernel_initializer=init)
+    Z = dense(prev)
 
-    batch_norm = tf.keras.layers.BatchNormalization(
-        epsilon=1e-7,
-        gamma_initializer=gamma,
-        beta_initializer=beta
-    )(layer)
+    gamma = tf.Variable(
+        initial_value=tf.ones((1, n)), trainable=True, name='gamma')
+    beta = tf.Variable(
+        initial_value=tf.zeros((1, n)), trainable=True, name='beta')
 
-    if activation is None:
-        return batch_norm
+    mean, variance = tf.nn.moments(Z, axes=[0])
+    epsilon = 1e-7
+    Z_norm = tf.nn.batch_normalization(
+        Z, mean, variance, beta, gamma, epsilon)
 
-    return activation(batch_norm)
+    return activation(Z_norm)
