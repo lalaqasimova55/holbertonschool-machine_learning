@@ -212,7 +212,8 @@ class Yolo:
 
         Qaytarır:
             (pimages, image_shapes) tuple:
-                pimages: emal olunmuş şəkillərdən ibarət (ni, input_h, input_w, 3)
+                pimages: emal olunmuş şəkillərdən ibarət
+                         shape: (ni, input_h, input_w, 3)
                 image_shapes: orijinal ölçülər (ni, 2) [image_h, image_w]
         """
         input_h = self.model.input.shape[2]
