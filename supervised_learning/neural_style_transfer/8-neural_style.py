@@ -106,12 +106,8 @@ class NST:
             weights='imagenet'
         )
 
-        vgg.trainable = False
-
-        # Rebuilding model with AveragePooling2D layers
-        inputs = vgg.input
-        x = inputs
-        layer_outputs = {}
+        x = vgg.input
+        model_outputs = []
 
         for layer in vgg.layers[1:]:
             if isinstance(layer, tf.keras.layers.MaxPooling2D):
@@ -123,14 +119,19 @@ class NST:
                 )(x)
             else:
                 x = layer(x)
-            layer_outputs[layer.name] = x
+
+        temp_model = tf.keras.Model(inputs=vgg.input, outputs=x)
 
         outputs = [
-            layer_outputs[layer]
-            for layer in self.style_layers + [self.content_layer]
+            temp_model.get_layer(name).output
+            for name in self.style_layers + [self.content_layer]
         ]
 
-        model = tf.keras.Model(inputs=inputs, outputs=outputs, name="model")
+        model = tf.keras.Model(
+            inputs=temp_model.input,
+            outputs=outputs,
+            name="model"
+        )
         model.trainable = False
         self.model = model
 
@@ -172,15 +173,15 @@ class NST:
             self.content_image * 255.0
         )
 
-        outputs_style = self.model(style_preprocessed)
-        outputs_content = self.model(content_preprocessed)
+        style_outputs = self.model(style_preprocessed)
+        content_outputs = self.model(content_preprocessed)
 
         self.gram_style_features = [
-            self.gram_matrix(outputs_style[i])
+            self.gram_matrix(style_outputs[i])
             for i in range(len(self.style_layers))
         ]
 
-        self.content_feature = outputs_content[len(self.style_layers)]
+        self.content_feature = content_outputs[len(self.style_layers)]
 
     def layer_style_cost(self, style_output, gram_target):
         """
