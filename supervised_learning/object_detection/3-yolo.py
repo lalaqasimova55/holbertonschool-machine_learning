@@ -140,7 +140,6 @@ class Yolo:
         unique_classes = np.unique(box_classes)
 
         for cls in unique_classes:
-            # Carici sinfə aid indeksləri tapmaq
             cls_mask = box_classes == cls
             cls_boxes = filtered_boxes[cls_mask]
             cls_scores = box_scores[cls_mask]
@@ -150,13 +149,13 @@ class Yolo:
             cls_boxes = cls_boxes[order]
             cls_scores = cls_scores[order]
 
-            keep = []
+            while len(cls_boxes) > 0:
+                # Ən yüksek skora sahib olan qutunu və skoru saxla
+                box_predictions.append(cls_boxes[0])
+                predicted_box_classes.append(cls)
+                predicted_box_scores.append(cls_scores[0])
 
-            while order.size > 0:
-                # Ən yüksək skora sahib qutunu saxla
-                keep.append(0)
-
-                if order.size == 1:
+                if len(cls_boxes) == 1:
                     break
 
                 # Qutuların koordinatları
@@ -182,23 +181,16 @@ class Yolo:
                 union_area = box0_area + boxes_area - intersection_area
                 iou = intersection_area / union_area
 
-                # nms_t dəyərindən kiçik olan (kəsişməyən/az kəsişən) qutuları saxla
-                below_threshold_indices = np.where(iou <= self.nms_t)[0]
+                # nms_t dəyərindən kiçik olan (kəsişməyən) qutuları saxla
+                below_threshold = np.where(iou <= self.nms_t)[0]
 
                 # Qutuları və skorları yenilə (növbəti indekslərə keçid)
-                cls_boxes = cls_boxes[below_threshold_indices + 1]
-                cls_scores = cls_scores[below_threshold_indices + 1]
-                order = order[below_threshold_indices + 1]
+                cls_boxes = cls_boxes[below_threshold + 1]
+                cls_scores = cls_scores[below_threshold + 1]
 
-            # NMS-dən keçən qutuları siyahıya əlavə et
-            if len(keep) > 0:
-                box_predictions.append(cls_boxes[keep] if len(keep) == len(order) else filtered_boxes[cls_mask][order[keep]])
-                predicted_box_classes.append(np.full(len(keep), cls))
-                predicted_box_scores.append(box_scores[cls_mask][order[keep]])
-
-        # Siyahıları array şəklinə gətirmək
-        box_predictions = np.concatenate(box_predictions, axis=0)
-        predicted_box_classes = np.concatenate(predicted_box_classes, axis=0)
-        predicted_box_scores = np.concatenate(predicted_box_scores, axis=0)
+        # Nəticələri numpy array şəkilə gətirmək
+        box_predictions = np.array(box_predictions)
+        predicted_box_classes = np.array(predicted_box_classes)
+        predicted_box_scores = np.array(predicted_box_scores)
 
         return box_predictions, predicted_box_classes, predicted_box_scores
