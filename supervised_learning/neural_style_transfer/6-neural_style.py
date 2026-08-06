@@ -107,8 +107,6 @@ class NST:
         )
 
         x = vgg.input
-        model_outputs = []
-
         for layer in vgg.layers[1:]:
             if isinstance(layer, tf.keras.layers.MaxPooling2D):
                 x = tf.keras.layers.AveragePooling2D(
