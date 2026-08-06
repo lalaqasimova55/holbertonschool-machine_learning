@@ -1,93 +1,92 @@
 #!/usr/bin/env python3
-"""Yolo Object Detection"""
-
-import tensorflow.keras as K
+"""
+YOLOv3 model çıktılarını işlemek için process_outputs metodunu içerir.
+"""
 import numpy as np
+import tensorflow.keras as K
 
 
 class Yolo:
-    """Yolo class"""
-
-    def __init__(self, model_path, classes_path,
-                 class_t, nms_t, anchors):
+    """
+    YOLOv3 algoritmasını kullanarak nesne tespiti yapan sınıf.
+    """
+    def __init__(self, model_path, classes_path, class_t, nms_t, anchors):
         """
-        Class constructor
+        Yolo sınıfı için kurucu metod.
         """
-
         self.model = K.models.load_model(model_path)
 
-        with open(classes_path, "r") as f:
-            self.class_names = [line.strip() for line in f]
+        with open(classes_path, 'r') as f:
+            self.class_names = [line.strip() for line in f.readlines()]
 
         self.class_t = class_t
         self.nms_t = nms_t
         self.anchors = anchors
 
-    @staticmethod
-    def sigmoid(x):
-        """Sigmoid activation"""
-        return 1 / (1 + np.exp(-x))
-
     def process_outputs(self, outputs, image_size):
         """
-        Process Darknet outputs
+        Darknet modelinden gelen tahmin çıktılarını işler.
 
-        Returns:
-            boxes, box_confidences, box_class_probs
+        Parametreler:
+            outputs: Darknet modelinden alınan tahminlerin bulunduğu list (ndarray).
+            image_size: Orijinal görüntünün boyutu [image_height, image_width].
+
+        Döndürür:
+            (boxes, box_confidences, box_class_probs) şeklinde bir tuple.
         """
-
         boxes = []
         box_confidences = []
         box_class_probs = []
 
-        # Input dimensions of the network
-        _, input_h, input_w, _ = self.model.input.shape.as_list()
+        image_height, image_width = image_size
+        input_width = self.model.input.shape[1]
+        input_height = self.model.input.shape[2]
 
-        image_h, image_w = image_size
+        for i, output in enumerate(outputs):
+            grid_height, grid_width, anchor_boxes, _ = output.shape
 
-        for output_idx, output in enumerate(outputs):
+            # 1. Sigmoid Aktivasyonu İşlemleri
+            # t_x, t_y için Sigmoit
+            t_xy = 1 / (1 + np.exp(-output[..., 0:2]))
+            
+            # Box Confidence için Sigmoit
+            box_confidence = 1 / (1 + np.exp(-output[..., 4:5]))
+            box_confidences.append(box_confidence)
 
-            grid_h = output.shape[0]
-            grid_w = output.shape[1]
-            anchor_boxes = output.shape[2]
+            # Sınıf olasılıkları için Sigmoit
+            box_class_prob = 1 / (1 + np.exp(-output[..., 5:]))
+            box_class_probs.append(box_class_prob)
 
-            tx = output[..., 0]
-            ty = output[..., 1]
-            tw = output[..., 2]
-            th = output[..., 3]
+            # 2. Grid (cx, cy) Koordinat Matrixlerinin Oluşturulması
+            grid_x, grid_y = np.meshgrid(np.arange(grid_width), np.arange(grid_height))
+            grid_xy = np.stack((grid_x, grid_y), axis=-1)
+            grid_xy = np.expand_dims(grid_xy, axis=2)  # Shape: (grid_height, grid_width, 1, 2)
 
-            # Grid coordinates
-            cx = np.arange(grid_w)
-            cy = np.arange(grid_h)
+            # 3. Bounding Box Merkez ve Boyutlarının Hesaplanması
+            # b_x = sigmoid(t_x) + c_x, b_y = sigmoid(t_y) + c_y
+            bx_by = t_xy + grid_xy
+            
+            # Grid hücre sayısına bölerek [0, 1] aralığına normalize etme
+            bx_by[..., 0] /= grid_width
+            bx_by[..., 1] /= grid_height
 
-            cx, cy = np.meshgrid(cx, cy)
+            # b_w = p_w * e^(t_w), b_h = p_h * e^(t_h)
+            t_wh = output[..., 2:4]
+            anchor_pw_ph = self.anchors[i]  # Shape: (anchor_boxes, 2)
+            bw_bh = anchor_pw_ph * np.exp(t_wh)
+            
+            # Model giriş boyutuna (input_width, input_height) bölerek normalize etme
+            bw_bh[..., 0] /= input_width
+            bw_bh[..., 1] /= input_height
 
-            cx = np.tile(cx[..., np.newaxis], (1, 1, anchor_boxes))
-            cy = np.tile(cy[..., np.newaxis], (1, 1, anchor_boxes))
+            # 4. (x1, y1, x2, y2) Koordinatlarının Orijinal Görsele Ölçeklenmesi
+            # Merkez ve boyuttan köşe koordinatlarına geçiş
+            x1 = (bx_by[..., 0] - (bw_bh[..., 0] / 2)) * image_width
+            y1 = (bx_by[..., 1] - (bw_bh[..., 1] / 2)) * image_height
+            x2 = (bx_by[..., 0] + (bw_bh[..., 0] / 2)) * image_width
+            y2 = (bx_by[..., 1] + (bw_bh[..., 1] / 2)) * image_height
 
-            # Center coordinates
-            bx = (self.sigmoid(tx) + cx) / grid_w
-            by = (self.sigmoid(ty) + cy) / grid_h
-
-            # Width and height
-            anchor_w = self.anchors[output_idx, :, 0]
-            anchor_h = self.anchors[output_idx, :, 1]
-
-            bw = (np.exp(tw) * anchor_w) / input_w
-            bh = (np.exp(th) * anchor_h) / input_h
-
-            # Convert to original image coordinates
-            x1 = (bx - bw / 2) * image_w
-            y1 = (by - bh / 2) * image_h
-            x2 = (bx + bw / 2) * image_w
-            y2 = (by + bh / 2) * image_h
-
-            boxes.append(np.stack((x1, y1, x2, y2), axis=-1))
-
-            # Object confidence
-            box_confidences.append(self.sigmoid(output[..., 4:5]))
-
-            # Class probabilities
-            box_class_probs.append(self.sigmoid(output[..., 5:]))
+            box = np.stack((x1, y1, x2, y2), axis=-1)
+            boxes.append(box)
 
         return boxes, box_confidences, box_class_probs
