@@ -1,16 +1,18 @@
 #!/usr/bin/env python3
-"""YOLO v3 Object Detection"""
+"""Yolo Object Detection"""
 
 import tensorflow.keras as K
 import numpy as np
 
 
 class Yolo:
-    """YOLO v3 object detector"""
+    """Yolo class"""
 
     def __init__(self, model_path, classes_path,
                  class_t, nms_t, anchors):
-        """Class constructor"""
+        """
+        Class constructor
+        """
 
         self.model = K.models.load_model(model_path)
 
@@ -23,75 +25,69 @@ class Yolo:
 
     @staticmethod
     def sigmoid(x):
-        """Calculates the sigmoid of x"""
+        """Sigmoid activation"""
         return 1 / (1 + np.exp(-x))
 
     def process_outputs(self, outputs, image_size):
         """
-        Processes Darknet outputs.
-
-        Args:
-            outputs: list of prediction tensors
-            image_size: numpy array (image_height, image_width)
+        Process Darknet outputs
 
         Returns:
-            (boxes, box_confidences, box_class_probs)
+            boxes, box_confidences, box_class_probs
         """
 
         boxes = []
         box_confidences = []
         box_class_probs = []
 
-        input_h = self.model.input.shape[1]
-        input_w = self.model.input.shape[2]
+        # Input dimensions of the network
+        _, input_h, input_w, _ = self.model.input.shape.as_list()
 
         image_h, image_w = image_size
 
-        for i, output in enumerate(outputs):
+        for output_idx, output in enumerate(outputs):
 
-            grid_h, grid_w, anchor_boxes = output.shape[:3]
+            grid_h = output.shape[0]
+            grid_w = output.shape[1]
+            anchor_boxes = output.shape[2]
 
-            # Network outputs
             tx = output[..., 0]
             ty = output[..., 1]
             tw = output[..., 2]
             th = output[..., 3]
 
-            # Create grid
+            # Grid coordinates
             cx = np.arange(grid_w)
             cy = np.arange(grid_h)
 
             cx, cy = np.meshgrid(cx, cy)
 
-            cx = np.expand_dims(cx, axis=-1)
-            cy = np.expand_dims(cy, axis=-1)
+            cx = np.tile(cx[..., np.newaxis], (1, 1, anchor_boxes))
+            cy = np.tile(cy[..., np.newaxis], (1, 1, anchor_boxes))
 
-            # Predicted center
+            # Center coordinates
             bx = (self.sigmoid(tx) + cx) / grid_w
             by = (self.sigmoid(ty) + cy) / grid_h
 
-            # Predicted width/height
-            pw = self.anchors[i, :, 0]
-            ph = self.anchors[i, :, 1]
+            # Width and height
+            anchor_w = self.anchors[output_idx, :, 0]
+            anchor_h = self.anchors[output_idx, :, 1]
 
-            bw = (np.exp(tw) * pw) / input_w
-            bh = (np.exp(th) * ph) / input_h
+            bw = (np.exp(tw) * anchor_w) / input_w
+            bh = (np.exp(th) * anchor_h) / input_h
 
-            # Convert to image coordinates
+            # Convert to original image coordinates
             x1 = (bx - bw / 2) * image_w
             y1 = (by - bh / 2) * image_h
             x2 = (bx + bw / 2) * image_w
             y2 = (by + bh / 2) * image_h
 
-            box = np.stack((x1, y1, x2, y2), axis=-1)
-            boxes.append(box)
+            boxes.append(np.stack((x1, y1, x2, y2), axis=-1))
 
-            # Confidence
-            box_confidence = self.sigmoid(output[..., 4:5])
-            box_confidences.append(box_confidence)
+            # Object confidence
+            box_confidences.append(self.sigmoid(output[..., 4:5]))
 
             # Class probabilities
-            class_probs = self.sigmoid(output[..., 5:])
-            box_class_probs.append(class_probs)
+            box_class_probs.append(self.sigmoid(output[..., 5:]))
 
         return boxes, box_confidences, box_class_probs
