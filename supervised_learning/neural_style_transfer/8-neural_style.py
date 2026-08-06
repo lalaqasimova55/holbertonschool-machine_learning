@@ -168,15 +168,15 @@ class NST:
             self.content_image * 255.0
         )
 
-        style_outputs = self.model(style_preprocessed)
-        content_outputs = self.model(content_preprocessed)
+        outputs_style = self.model(style_preprocessed)
+        outputs_content = self.model(content_preprocessed)
 
         self.gram_style_features = [
-            self.gram_matrix(style_outputs[i])
+            self.gram_matrix(outputs_style[i])
             for i in range(len(self.style_layers))
         ]
 
-        self.content_feature = content_outputs[len(self.style_layers)]
+        self.content_feature = outputs_content[len(self.style_layers)]
 
     def layer_style_cost(self, style_output, gram_target):
         """
