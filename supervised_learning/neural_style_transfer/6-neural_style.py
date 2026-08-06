@@ -107,7 +107,7 @@ class NST:
         )
 
         x = vgg.input
-        layer_outputs = {}
+        model_outputs = []
 
         for layer in vgg.layers[1:]:
             if isinstance(layer, tf.keras.layers.MaxPooling2D):
@@ -119,14 +119,19 @@ class NST:
                 )(x)
             else:
                 x = layer(x)
-            layer_outputs[layer.name] = x
+
+        temp_model = tf.keras.Model(inputs=vgg.input, outputs=x)
 
         outputs = [
-            layer_outputs[layer]
-            for layer in self.style_layers + [self.content_layer]
+            temp_model.get_layer(name).output
+            for name in self.style_layers + [self.content_layer]
         ]
 
-        model = tf.keras.Model(inputs=vgg.input, outputs=outputs, name="model")
+        model = tf.keras.Model(
+            inputs=temp_model.input,
+            outputs=outputs,
+            name="model"
+        )
         model.trainable = False
         self.model = model
 
@@ -176,7 +181,6 @@ class NST:
             for i in range(len(self.style_layers))
         ]
 
-        # Use len(self.style_layers) index for content layer output
         self.content_feature = content_outputs[len(self.style_layers)]
 
     def layer_style_cost(self, style_output, gram_target):
