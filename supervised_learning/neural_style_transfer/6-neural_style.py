@@ -176,7 +176,8 @@ class NST:
             for i in range(len(self.style_layers))
         ]
 
-        self.content_feature = content_outputs[-1]
+        # Use len(self.style_layers) index for content layer output
+        self.content_feature = content_outputs[len(self.style_layers)]
 
     def layer_style_cost(self, style_output, gram_target):
         """
