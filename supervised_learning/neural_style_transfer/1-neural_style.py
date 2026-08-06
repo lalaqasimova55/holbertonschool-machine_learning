@@ -104,36 +104,9 @@ class NST:
             weights='imagenet'
         )
 
-        # Custom custom_objects handling or pooling layer replacement
-        vgg.trainable = False
-
-        # Extract outputs for style layers followed by content layer
-        outputs = [
-            vgg.get_layer(layer).output
-            for layer in self.style_layers + [self.content_layer]
-        ]
-
-        # Construct and set the model attribute
-        model = tf.keras.Model(inputs=vgg.input, outputs=outputs)
-
-        # Replace MaxPooling2D layers with AveragePooling2D layers
-        # as typical in NST implementations and reflected in main output summary
-        custom_objects = {}
-        for layer in model.layers:
-            if isinstance(layer, tf.keras.layers.MaxPooling2D):
-                avg_pool = tf.keras.layers.AveragePooling2D(
-                    pool_size=layer.pool_size,
-                    strides=layer.strides,
-                    padding=layer.padding,
-                    name=layer.name
-                )
-                custom_objects[layer.name] = avg_pool
-
-        # Re-build model with AveragePooling layers
-        input_layer = vgg.input
-        x = input_layer
-
+        x = vgg.input
         layer_outputs = {}
+
         for layer in vgg.layers[1:]:
             if isinstance(layer, tf.keras.layers.MaxPooling2D):
                 x = tf.keras.layers.AveragePooling2D(
@@ -151,5 +124,7 @@ class NST:
             for layer in self.style_layers + [self.content_layer]
         ]
 
-        self.model = tf.keras.Model(inputs=input_layer, outputs=outputs)
-        self.model.trainable = False
+        # Explicitly set name="model" to guarantee the model summary name
+        model = tf.keras.Model(inputs=vgg.input, outputs=outputs, name="model")
+        model.trainable = False
+        self.model = model
