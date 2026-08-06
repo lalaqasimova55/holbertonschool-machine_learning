@@ -120,9 +120,12 @@ class NST:
 
         temp_model = tf.keras.Model(inputs=vgg.input, outputs=x)
 
+        # NST.style_layers və NST.content_layer dinamik şəkildə klass/instansiyadan oxunur
+        layers = self.style_layers + [self.content_layer]
+
         outputs = [
             temp_model.get_layer(name).output
-            for name in self.style_layers + [self.content_layer]
+            for name in layers
         ]
 
         model = tf.keras.Model(
