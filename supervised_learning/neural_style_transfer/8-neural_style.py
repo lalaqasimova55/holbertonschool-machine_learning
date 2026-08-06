@@ -106,7 +106,11 @@ class NST:
             weights='imagenet'
         )
 
-        x = vgg.input
+        vgg.trainable = False
+
+        # Rebuilding model with AveragePooling2D layers
+        inputs = vgg.input
+        x = inputs
         layer_outputs = {}
 
         for layer in vgg.layers[1:]:
@@ -126,7 +130,7 @@ class NST:
             for layer in self.style_layers + [self.content_layer]
         ]
 
-        model = tf.keras.Model(inputs=vgg.input, outputs=outputs, name="model")
+        model = tf.keras.Model(inputs=inputs, outputs=outputs, name="model")
         model.trainable = False
         self.model = model
 
