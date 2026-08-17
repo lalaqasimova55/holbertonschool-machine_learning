@@ -69,7 +69,6 @@ class BayesianOptimization:
                 break
 
             Y_next = self.f(X_next)
-
             self.gp.update(X_next, Y_next)
 
         if self.minimize:
