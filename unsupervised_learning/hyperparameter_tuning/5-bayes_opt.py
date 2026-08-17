@@ -39,22 +39,24 @@ class BayesianOptimization:
         """Calculate the next best sample location."""
         mu, sigma = self.gp.predict(self.X_s)
 
-        if self.minimize:
-            best = np.min(self.gp.Y)
-            Z = (best - mu - self.xsi) / sigma
-            EI = (
-                (best - mu - self.xsi) * norm.cdf(Z)
-                + sigma * norm.pdf(Z)
-            )
-        else:
-            best = np.max(self.gp.Y)
-            Z = (mu - best - self.xsi) / sigma
-            EI = (
-                (mu - best - self.xsi) * norm.cdf(Z)
-                + sigma * norm.pdf(Z)
-            )
+        # zero division xetasi olmasin deye sigma > 0 yoxlanilmalidir
+        with np.errstate(divide='ignore'):
+            if self.minimize:
+                best = np.min(self.gp.Y)
+                Z = (best - mu - self.xsi) / sigma
+                EI = (
+                    (best - mu - self.xsi) * norm.cdf(Z)
+                    + sigma * norm.pdf(Z)
+                )
+            else:
+                best = np.max(self.gp.Y)
+                Z = (mu - best - self.xsi) / sigma
+                EI = (
+                    (mu - best - self.xsi) * norm.cdf(Z)
+                    + sigma * norm.pdf(Z)
+                )
 
-        EI[sigma == 0] = 0
+            EI[sigma == 0] = 0
 
         X_next = self.X_s[np.argmax(EI)]
 
