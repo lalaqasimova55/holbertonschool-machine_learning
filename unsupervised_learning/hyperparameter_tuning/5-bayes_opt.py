@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Bayesian Optimization"""
+"""Bayesian Optimization Module"""
 
 
 import numpy as np
@@ -65,7 +65,6 @@ class BayesianOptimization:
         for _ in range(iterations):
             X_next, _ = self.acquisition()
 
-            # If the next proposed point has already been sampled, stop early
             if np.any(self.gp.X == X_next):
                 break
 
