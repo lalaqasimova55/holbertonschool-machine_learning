@@ -1,9 +1,7 @@
 #!/usr/bin/env python3
-"""
-Determines the optimum number of clusters for K-means.
-"""
 
 import numpy as np
+
 
 kmeans = __import__('1-kmeans').kmeans
 variance = __import__('2-variance').variance
@@ -11,32 +9,30 @@ variance = __import__('2-variance').variance
 
 def optimum_k(X, kmin=1, kmax=None, iterations=1000):
     """
-    Determines the optimum number of clusters.
+    Tests for the optimum number of clusters by variance.
 
     Args:
-        X (numpy.ndarray): Dataset of shape (n, d).
-        kmin (int): Minimum number of clusters.
-        kmax (int): Maximum number of clusters.
-        iterations (int): Maximum number of K-means iterations.
+        X: numpy.ndarray of shape (n, d)
+        kmin: minimum number of clusters
+        kmax: maximum number of clusters
+        iterations: maximum number of K-means iterations
 
     Returns:
-        tuple: (results, d_vars), or (None, None) on failure.
+        results, d_vars
+        or None, None on failure
     """
     if not isinstance(X, np.ndarray) or X.ndim != 2:
         return None, None
 
     n = X.shape[0]
 
-    if n < 1 or kmin <= 0:
+    if not isinstance(kmin, int) or kmin <= 0 or kmin >= n:
         return None, None
 
     if kmax is None:
-        kmax = kmin + 1
+        kmax = n - 1
 
-    if not isinstance(kmax, int) or kmax <= kmin or kmax > n:
-        return None, None
-
-    if not isinstance(kmin, int) or kmin > n:
+    if not isinstance(kmax, int) or kmax <= kmin or kmax >= n:
         return None, None
 
     if not isinstance(iterations, int) or iterations <= 0:
