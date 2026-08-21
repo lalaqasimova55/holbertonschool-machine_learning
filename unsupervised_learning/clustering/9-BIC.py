@@ -1,71 +1,90 @@
 #!/usr/bin/env python3
-"""Expectation Maximization Module for GMM"""
-
+"""Determines the best number of clusters for a GMM using BIC."""
 
 import numpy as np
 
-initialize = __import__('4-initialize').initialize
-expectation = __import__('6-expectation').expectation
-maximization = __import__('7-maximization').maximization
+expectation_maximization = __import__('8-EM').expectation_maximization
 
 
-def expectation_maximization(X, k, iterations=1000, tol=1e-5,
-                             verbose=False):
-    """Performs the expectation maximization algorithm for a GMM.
+def BIC(X, kmin=1, kmax=None, iterations=1000, tol=1e-5,
+        verbose=False):
+    """Calculates the best number of clusters for a GMM using BIC.
 
     Args:
-        X: numpy.ndarray of shape (n, d)
-        k: positive integer, number of clusters
-        iterations: positive integer, maximum number of iterations
-        tol: non-negative float, tolerance for early stopping
-        verbose: boolean, whether to print log likelihood
+        X (numpy.ndarray): Data set of shape (n, d).
+        kmin (int): Minimum number of clusters.
+        kmax (int): Maximum number of clusters.
+        iterations (int): Maximum number of EM iterations.
+        tol (float): EM convergence tolerance.
+        verbose (bool): Whether to print EM information.
 
     Returns:
-        pi, m, S, g, l or None, None, None, None, None on failure
+        tuple: best_k, best_result, l, b
+        or (None, None, None, None) on failure.
     """
-    if not isinstance(X, np.ndarray) or len(X.shape) != 2:
-        return None, None, None, None, None
+    if not isinstance(X, np.ndarray) or X.ndim != 2:
+        return None, None, None, None
 
     n, d = X.shape
 
-    if not isinstance(k, int) or k <= 0 or k > n:
-        return None, None, None, None, None
+    if n == 0 or d == 0:
+        return None, None, None, None
+
+    if not isinstance(kmin, int) or kmin <= 0:
+        return None, None, None, None
+
+    if kmax is None:
+        kmax = n
+
+    if not isinstance(kmax, int) or kmax <= 0:
+        return None, None, None, None
+
+    if kmin > kmax or kmax > n:
+        return None, None, None, None
 
     if not isinstance(iterations, int) or iterations <= 0:
-        return None, None, None, None, None
+        return None, None, None, None
 
     if not isinstance(tol, (int, float)) or tol < 0:
-        return None, None, None, None, None
+        return None, None, None, None
 
-    if not isinstance(verbose, bool):
-        return None, None, None, None, None
+    ks = range(kmin, kmax + 1)
 
-    pi, m, S = initialize(X, k)
-    if pi is None or m is None or S is None:
-        return None, None, None, None, None
+    l = np.zeros(kmax - kmin + 1)
+    b = np.zeros(kmax - kmin + 1)
 
-    l = None
+    results = []
 
-    for i in range(iterations):
-        g, l_new = expectation(X, pi, m, S)
-        if g is None or l_new is None:
-            return None, None, None, None, None
+    for i, k in enumerate(ks):
+        result = expectation_maximization(
+            X,
+            k,
+            iterations=iterations,
+            tol=tol,
+            verbose=verbose
+        )
 
-        if l is not None and abs(l_new - l) <= tol:
-            if verbose:
-                print("Log Likelihood after {} iterations: {:.5f}".format(
-                    i, l_new))
-            l = l_new
-            break
+        if result is None:
+            return None, None, None, None
 
-        if verbose and (i % 10 == 0):
-            print("Log Likelihood after {} iterations: {:.5f}".format(
-                i, l_new))
+        pi, m, S, likelihood = result
 
-        pi, m, S = maximization(X, g)
-        if pi is None or m is None or S is None:
-            return None, None, None, None, None
+        if pi is None or m is None or S is None or likelihood is None:
+            return None, None, None, None
 
-        l = l_new
+        # Number of parameters:
+        # k means: k * d
+        # covariance matrices: k * d * (d + 1) / 2
+        # priors: k - 1
+        p = k * d + k * d * (d + 1) / 2 + (k - 1)
 
-    return pi, m, S, g, l
+        l[i] = likelihood
+        b[i] = p * np.log(n) - 2 * likelihood
+
+        results.append((pi, m, S))
+
+    best_index = np.argmin(b)
+    best_k = kmin + best_index
+    best_result = results[best_index]
+
+    return best_k, best_result, l, b
