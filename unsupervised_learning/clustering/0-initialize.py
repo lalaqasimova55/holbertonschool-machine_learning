@@ -1,36 +1,34 @@
 #!/usr/bin/env python3
-"""Gaussian Process"""
-
+"""Initialize K-means."""
 
 import numpy as np
 
 
-class GaussianProcess:
-    """Represents a noiseless 1D Gaussian process."""
+def initialize(X, k):
+    """Initialize cluster centroids for K-means.
 
-    def __init__(self, X_init, Y_init, l=1, sigma_f=1):
-        """Initialize the Gaussian process."""
-        self.X = X_init
-        self.Y = Y_init
-        self.l = l
-        self.sigma_f = sigma_f
-        self.K = self.kernel(X_init, X_init)
+    Args:
+        X: numpy.ndarray of shape (n, d), dataset.
+        k: positive integer, number of clusters.
 
-    def kernel(self, X1, X2):
-        """Calculate the covariance kernel matrix."""
-        return (self.sigma_f ** 2) * np.exp(
-            -((X1 - X2.T) ** 2) / (2 * self.l ** 2)
-        )
+    Returns:
+        numpy.ndarray of shape (k, d) containing initialized centroids,
+        or None on failure.
+    """
+    if not isinstance(X, np.ndarray) or X.ndim != 2:
+        return None
 
-    def predict(self, X_s):
-        """Predict the mean and variance of points in the GP."""
-        K = self.K
-        K_s = self.kernel(self.X, X_s)
-        K_ss = self.kernel(X_s, X_s)
+    if not isinstance(k, int) or k <= 0:
+        return None
 
-        K_inv = np.linalg.inv(K)
+    if X.shape[0] == 0:
+        return None
 
-        mu = K_s.T @ K_inv @ self.Y
-        sigma = np.diag(K_ss - K_s.T @ K_inv @ K_s)
+    min_values = np.min(X, axis=0)
+    max_values = np.max(X, axis=0)
 
-        return mu.flatten(), sigma
+    return np.random.uniform(
+        min_values,
+        max_values,
+        (k, X.shape[1])
+    )
