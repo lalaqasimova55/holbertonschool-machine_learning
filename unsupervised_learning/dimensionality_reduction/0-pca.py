@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""PCA"""
+"""Performs Principal Component Analysis (PCA) on a dataset."""
 
 
 import numpy as np
@@ -10,10 +10,11 @@ def pca(X, var=0.95):
 
     Args:
         X: numpy.ndarray of shape (n, d)
-        var: fraction of variance to maintain
+        var: fraction of the variance to maintain
 
     Returns:
-        W: numpy.ndarray of shape (d, nd)
+        W: numpy.ndarray of shape (d, nd) containing the
+        weights that preserve the requested variance.
     """
     U, S, Vh = np.linalg.svd(X)
 
