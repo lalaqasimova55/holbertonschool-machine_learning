@@ -377,8 +377,7 @@ class NST:
                 print(
                     f"Cost at iteration {i}: {current_cost}, "
                     f"content {float(J_content.numpy())}, "
-                    f"style {float(J_style.numpy())}, "
-                    f"var {float(J_var.numpy())}"
+                    f"style {float(J_style.numpy())}"
                 )
 
             if i < iterations:
