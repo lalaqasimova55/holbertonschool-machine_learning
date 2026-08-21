@@ -16,12 +16,9 @@ def kmeans(X, k):
             C: Centroids of shape (k, d).
             clss: Cluster labels of shape (n,).
     """
-    kmeans = sklearn.cluster.KMeans(
-        n_clusters=k,
-        random_state=0
-    )
+    model = sklearn.cluster.KMeans(n_clusters=k)
 
-    clss = kmeans.fit_predict(X)
-    C = kmeans.cluster_centers_
+    clss = model.fit_predict(X)
+    C = model.cluster_centers_
 
     return C, clss
