@@ -13,17 +13,16 @@ def pca(X, var=0.95):
         var: fraction of variance to maintain
 
     Returns:
-        W: weights matrix of shape (d, nd)
+        W: numpy.ndarray of shape (d, nd)
     """
-    U, S, Vt = np.linalg.svd(X, full_matrices=False)
+    U, S, Vh = np.linalg.svd(X)
 
-    variance = S ** 2
-    cumulative_variance = np.cumsum(variance)
-    total_variance = np.sum(variance)
+    total = np.sum(S)
+    ratio = 0
+    i = 0
 
-    nd = np.searchsorted(
-        cumulative_variance / total_variance,
-        var
-    ) + 1
+    while ratio < var:
+        ratio += S[i] / total
+        i += 1
 
-    return Vt.T[:, :nd]
+    return Vh[:i].T
