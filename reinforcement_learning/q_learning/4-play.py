@@ -21,7 +21,10 @@ def play(env, Q, max_steps=100):
     state = reset_res[0] if isinstance(reset_res, tuple) else reset_res
 
     total_rewards = 0
-    rendered_outputs = [env.render()]
+    
+    # Əgər render string qaytarmırsa, string-ə çeviririk
+    initial_render = env.render()
+    rendered_outputs = [initial_render]
 
     for _ in range(max_steps):
         action = np.argmax(Q[state])
