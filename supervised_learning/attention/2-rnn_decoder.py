@@ -1,8 +1,6 @@
-```python
 #!/usr/bin/env python3
 """Defines the RNNDecoder class for machine translation"""
 import tensorflow as tf
-
 SelfAttention = __import__('1-self_attention').SelfAttention
 
 
@@ -22,19 +20,14 @@ class RNNDecoder(tf.keras.layers.Layer):
         Sets the public instance attributes embedding, gru, F
         """
         super(RNNDecoder, self).__init__()
-
         self.embedding = tf.keras.layers.Embedding(
-            input_dim=vocab,
-            output_dim=embedding)
-
+            input_dim=vocab, output_dim=embedding)
         self.gru = tf.keras.layers.GRU(
             units,
             return_sequences=True,
             return_state=True,
             recurrent_initializer='glorot_uniform')
-
         self.F = tf.keras.layers.Dense(vocab)
-
         self.attention = SelfAttention(units)
 
     def call(self, x, s_prev, hidden_states):
@@ -60,19 +53,12 @@ class RNNDecoder(tf.keras.layers.Layer):
         x = self.embedding(x)
 
         context = tf.expand_dims(context, 1)
-
         x = tf.concat([context, x], axis=-1)
 
-        outputs, s = self.gru(
-            x,
-            initial_state=s_prev)
+        outputs, s = self.gru(x, initial_state=s_prev)
 
-        outputs = tf.reshape(
-            outputs,
-            (-1, outputs.shape[2]))
+        outputs = tf.reshape(outputs, (-1, outputs.shape[2]))
 
         y = self.F(outputs)
 
         return y, s
-```
-
