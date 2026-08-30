@@ -1,21 +1,18 @@
 #!/usr/bin/env python3
-"""
-Module to determine the next action using epsilon-greedy.
-"""
+"""Uses epsilon-greedy to determine the next action"""
 import numpy as np
 
 
 def epsilon_greedy(Q, state, epsilon):
-    """
-    Uses epsilon-greedy to determine the next action.
+    """Uses epsilon-greedy to determine the next action
 
-    Parameters:
-    - Q: numpy.ndarray containing the q-table
-    - state: the current state
-    - epsilon: the epsilon to use for the calculation
+    Args:
+        Q: a numpy.ndarray containing the q-table
+        state: the current state
+        epsilon: the epsilon to use for the calculation
 
     Returns:
-    - the next action index
+        the next action index
     """
     p = np.random.uniform(0, 1)
 
