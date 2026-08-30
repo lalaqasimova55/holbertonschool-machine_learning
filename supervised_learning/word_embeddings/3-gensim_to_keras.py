@@ -1,27 +1,21 @@
 #!/usr/bin/env python3
-"""Converts a gensim Word2Vec model to a Keras Embedding layer."""
+"""Reads a gensim Word2Vec model and returns its embeddings and features."""
 
-import tensorflow as tf
+import gensim
 
 
-def gensim_to_keras(model):
-    """Converts a gensim word2vec model to a keras Embedding layer.
+def read_word2vec(filename):
+    """Reads a gensim Word2Vec model.
 
     Args:
-        model: a trained gensim word2vec model
+        filename: path to the saved Word2Vec model file
 
     Returns:
-        the trainable keras Embedding layer
+        embeddings: a numpy.ndarray of shape (vocab_size, vector_size)
+        features: a list of the features (vocabulary words)
     """
-    wv = model.wv
-    weights = wv.vectors
-    vocab_size, vector_size = weights.shape
+    model = gensim.models.Word2Vec.load(filename)
+    embeddings = model.wv.vectors
+    features = model.wv.index_to_key
 
-    embedding_layer = tf.keras.layers.Embedding(
-        input_dim=vocab_size,
-        output_dim=vector_size,
-        weights=[weights],
-        trainable=True
-    )
-
-    return embedding_layer
+    return embeddings, features
