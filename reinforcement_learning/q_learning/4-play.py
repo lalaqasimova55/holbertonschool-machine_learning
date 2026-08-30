@@ -17,31 +17,19 @@ def play(env, Q, max_steps=100):
             rendered_outputs: a list of rendered outputs representing
                 the board state at each step
     """
-    reset_res = env.reset()
-    state = reset_res[0] if isinstance(reset_res, tuple) else reset_res
-
+    state, _ = env.reset()
     total_rewards = 0
-    
-    # Əgər render string qaytarmırsa, string-ə çeviririk
-    initial_render = env.render()
-    rendered_outputs = [initial_render]
+    rendered_outputs = [env.render()]
 
-    for _ in range(max_steps):
+    for step in range(max_steps):
         action = np.argmax(Q[state])
-        step_res = env.step(action)
-
-        if len(step_res) == 5:
-            new_state, reward, terminated, truncated, _ = step_res
-            done = terminated or truncated
-        else:
-            new_state, reward, done, _ = step_res
-
+        new_state, reward, terminated, truncated, info = env.step(action)
         rendered_outputs.append(env.render())
 
         state = new_state
         total_rewards += reward
 
-        if done:
+        if terminated or truncated:
             break
 
     return total_rewards, rendered_outputs
