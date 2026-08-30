@@ -1,3 +1,4 @@
+```python
 #!/usr/bin/env python3
 """Loads and preps a dataset for machine translation"""
 import transformers
@@ -43,3 +44,5 @@ class Dataset:
             en_sentences(), vocab_size=2 ** 13)
 
         return tokenizer_pt, tokenizer_en
+```
+
