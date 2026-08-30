@@ -1,45 +1,35 @@
 #!/usr/bin/env python3
-"""
-Module to play an episode in FrozenLake environment using trained Q-table.
-"""
+"""Has the trained agent play an episode"""
 import numpy as np
 
 
 def play(env, Q, max_steps=100):
-    """
-    Has the trained agent play an episode using full exploitation.
+    """Has the trained agent play an episode
 
-    Parameters:
-    - env: FrozenLakeEnv instance
-    - Q: numpy.ndarray containing the Q-table
-    - max_steps: maximum number of steps in the episode
+    Args:
+        env: the FrozenLakeEnv instance
+        Q: a numpy.ndarray containing the Q-table
+        max_steps: the maximum number of steps in the episode
 
     Returns:
-    - total_rewards: total rewards for the episode
-    - rendered_outputs: list of rendered outputs representing board states
+        total_rewards, rendered_outputs
+            total_rewards: the rewards for the episode
+            rendered_outputs: a list of rendered outputs representing
+                the board state at each step
     """
-    state = env.reset()
-    if isinstance(state, tuple):
-        state = state[0]
-
-    rendered_outputs = [env.render()]
+    state, _ = env.reset()
     total_rewards = 0
+    rendered_outputs = [env.render()]
 
     for step in range(max_steps):
         action = np.argmax(Q[state])
-
-        res = env.step(action)
-        if len(res) == 5:
-            next_state, reward, terminated, truncated, _ = res
-            done = terminated or truncated
-        else:
-            next_state, reward, done, _ = res
-
+        new_state, reward, terminated, truncated, info = env.step(action)
         rendered_outputs.append(env.render())
-        total_rewards += reward
-        state = next_state
 
-        if done:
+        state = new_state
+        total_rewards += reward
+
+        if terminated or truncated:
             break
 
     return total_rewards, rendered_outputs
