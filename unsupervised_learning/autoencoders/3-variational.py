@@ -35,11 +35,19 @@ def autoencoder(input_dims, hidden_layers, latent_dims):
     decoder = K.Model(input_dec, output_dec, name='decoder')
 
     auto_inputs = K.Input(shape=(input_dims,))
-    z_sampled, _, _ = encoder(auto_inputs)
+    z_sampled, z_m, z_lv = encoder(auto_inputs)
     reconstructed = decoder(z_sampled)
+    
+    # VAE loss: Reconstruction loss + KL divergence loss
+    reconstruction_loss = K.losses.binary_crossentropy(auto_inputs, reconstructed)
+    reconstruction_loss *= input_dims
+    kl_loss = 1 + z_lv - K.backend.square(z_m) - K.backend.exp(z_lv)
+    kl_loss = K.backend.sum(kl_loss, axis=-1)
+    kl_loss *= -0.5
+    vae_loss = K.backend.mean(reconstruction_loss + kl_loss)
+    
     auto = K.Model(auto_inputs, reconstructed, name='autoencoder')
-
-    # Birbaşa tələb olunan optimizer və loss (checker-dən keçmək üçün)
-    auto.compile(optimizer='adam', loss='binary_crossentropy')
+    auto.add_loss(vae_loss)
+    auto.compile(optimizer='adam')
 
     return encoder, decoder, auto
