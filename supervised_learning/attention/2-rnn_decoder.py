@@ -12,8 +12,7 @@ class RNNDecoder(tf.keras.layers.Layer):
 
         Args:
             vocab: integer, size of the output vocabulary
-            embedding: integer, dimensionality of the embedding
-                       vector
+            embedding: integer, dimensionality of the embedding vector
             units: integer, number of hidden units in the RNN cell
             batch: integer, batch size
 
@@ -35,30 +34,35 @@ class RNNDecoder(tf.keras.layers.Layer):
 
         Args:
             x: tensor of shape (batch, 1), previous word in the
-               target sequence as an index of the target vocabulary
+                target sequence as an index of the target vocabulary
             s_prev: tensor of shape (batch, units), previous decoder
                     hidden state
             hidden_states: tensor of shape (batch, input_seq_len,
-                            units), outputs of the encoder
+                           units), outputs of the encoder
 
         Returns:
             y, s
             y: tensor of shape (batch, vocab), output word as a one
-               hot vector in the target vocabulary
+                hot vector in the target vocabulary
             s: tensor of shape (batch, units), new decoder hidden
                state
         """
-        context, weights = self.attention(s_prev, hidden_states)
+        context, _ = self.attention(s_prev, hidden_states)
 
+        # Embedding the target word
         x = self.embedding(x)
 
+        # Concatenate context vector and embedded target word
         context = tf.expand_dims(context, 1)
         x = tf.concat([context, x], axis=-1)
 
-        outputs, s = self.gru(x, initial_state=s_prev)
+        # Pass the concatenated vector through the GRU
+        outputs, s = self.gru(x)
 
+        # Reshape outputs to pass through the dense layer
         outputs = tf.reshape(outputs, (-1, outputs.shape[2]))
 
+        # Fully connected layer to get vocabulary logits/probabilities
         y = self.F(outputs)
 
         return y, s
