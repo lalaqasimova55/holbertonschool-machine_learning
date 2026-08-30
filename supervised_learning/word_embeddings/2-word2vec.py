@@ -2,6 +2,7 @@
 """Creates and trains a Word2Vec model."""
 
 import gensim
+import numpy as np
 
 
 def word2vec_model(sentences, vector_size=100, min_count=5, window=5,
@@ -22,6 +23,7 @@ def word2vec_model(sentences, vector_size=100, min_count=5, window=5,
     Returns:
         The trained Word2Vec model
     """
+    np.random.seed(seed)
     model = gensim.models.Word2Vec(
         sentences=sentences,
         vector_size=vector_size,
