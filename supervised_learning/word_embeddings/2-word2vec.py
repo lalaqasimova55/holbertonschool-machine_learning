@@ -29,9 +29,13 @@ def word2vec_model(sentences, vector_size=100, min_count=5, window=5,
         window=window,
         negative=negative,
         sg=0 if cbow else 1,
-        epochs=epochs,
         seed=seed,
-        workers=workers,
+        workers=workers
+    )
+    model.train(
+        sentences,
+        total_examples=model.corpus_count,
+        epochs=epochs,
         compute_loss=True
     )
 
