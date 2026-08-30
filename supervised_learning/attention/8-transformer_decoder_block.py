@@ -39,6 +39,8 @@ class DecoderBlock(tf.keras.layers.Layer):
     def call(self, x, encoder_output, training, look_ahead_mask,
               padding_mask):
         """
+        Performs the forward pass through the decoder block.
+
         Args:
             x: tensor of shape (batch, target_seq_len, dm) containing the
                input to the decoder block
@@ -58,8 +60,8 @@ class DecoderBlock(tf.keras.layers.Layer):
         attn1 = self.dropout1(attn1, training=training)
         out1 = self.layernorm1(x + attn1)
 
-        attn2, _ = self.mha2(
-            out1, encoder_output, encoder_output, padding_mask)
+        attn2, _ = self.mha2(out1, encoder_output, encoder_output,
+                             padding_mask)
         attn2 = self.dropout2(attn2, training=training)
         out2 = self.layernorm2(out1 + attn2)
 
