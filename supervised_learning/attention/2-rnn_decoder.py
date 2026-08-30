@@ -1,6 +1,8 @@
+```python
 #!/usr/bin/env python3
 """Defines the RNNDecoder class for machine translation"""
 import tensorflow as tf
+
 SelfAttention = __import__('1-self_attention').SelfAttention
 
 
@@ -62,3 +64,5 @@ class RNNDecoder(tf.keras.layers.Layer):
         y = self.F(outputs)
 
         return y, s
+```
+
