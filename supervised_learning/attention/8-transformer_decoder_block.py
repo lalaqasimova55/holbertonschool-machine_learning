@@ -35,7 +35,7 @@ class DecoderBlock(tf.keras.layers.Layer):
         self.dropout3 = tf.keras.layers.Dropout(drop_rate)
 
     def call(self, x, encoder_output, training, look_ahead_mask,
-              padding_mask):
+             padding_mask):
         """
         Args:
             x: tensor of shape (batch, target_seq_len, dm) containing the
@@ -56,8 +56,8 @@ class DecoderBlock(tf.keras.layers.Layer):
         attn1 = self.dropout1(attn1, training=training)
         out1 = self.layernorm1(x + attn1)
 
-        attn2, _ = self.mha2(out1, encoder_output, encoder_output,
-                              padding_mask)
+        attn2, _ = self.mha2(
+            out1, encoder_output, encoder_output, padding_mask)
         attn2 = self.dropout2(attn2, training=training)
         out2 = self.layernorm2(out1 + attn2)
 
