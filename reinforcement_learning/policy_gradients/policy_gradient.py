@@ -30,6 +30,9 @@ def policy_gradient(state, weight):
     Returns:
         the action and the gradient (in this order)
     """
+    if len(state.shape) == 1:
+        state = state[np.newaxis, :]
+
     P = policy(state, weight)
     probs = P[0] / P[0].sum()
     action = np.random.choice(len(probs), p=probs)
