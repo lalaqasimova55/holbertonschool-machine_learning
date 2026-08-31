@@ -1,45 +1,53 @@
 #!/usr/bin/env python3
-"""Monte Carlo policy evaluation"""
+"""Module to perform Monte Carlo algorithm for policy evaluation."""
+
 import numpy as np
 
 
-def monte_carlo(env, V, policy, episodes=5000, max_steps=100, alpha=0.1, gamma=0.99):
-    """
-    Performs the Monte Carlo algorithm for policy evaluation.
+def monte_carlo(
+    env, V, policy, episodes=5000, max_steps=100, alpha=0.1, gamma=0.99
+):
+    """Performs the Monte Carlo algorithm to evaluate a given policy.
 
-    env: environment instance
-    V: numpy.ndarray of shape (s,) containing the value estimate
-    policy: function that takes in a state and returns the next action to take
-    episodes: total number of episodes to train over
-    max_steps: maximum number of steps per episode
-    alpha: learning rate
-    gamma: discount rate
+    Args:
+        env: Environment instance.
+        V: Numpy array of shape (s,) containing the value estimate.
+        policy: Function that takes in a state and returns next action.
+        episodes: Total number of episodes to train over.
+        max_steps: Maximum number of steps per episode.
+        alpha: Learning rate.
+        gamma: Discount rate.
 
     Returns:
-        V, the updated value estimate
+        V: The updated value estimate.
     """
-    for _ in range(episodes):
+    for episode in range(episodes):
         state, _ = env.reset()
-        episode = []
+        episode_data = []
 
-        # Step 1: Simulate the episode
-        for _ in range(max_steps):
+        for step in range(max_steps):
             action = policy(state)
             next_state, reward, terminated, truncated, _ = env.step(action)
-            episode.append((state, reward))
-            if terminated or truncated:
-                break
+            episode_data.append((state, action, reward))
             state = next_state
 
-        # Step 2: Backward pass to calculate G and update V
-        G = 0
-        visited_states = [step[0] for step in episode]
-        for t, (state, reward) in enumerate(reversed(episode)):
-            idx = len(episode) - 1 - t
-            G = gamma * G + reward
+            if terminated or truncated:
+                break
 
-            # First-visit MC check
-            if state not in visited_states[:idx]:
-                V[state] = V[state] + alpha * (G - V[state])
+        # Calculate returns
+        G = 0
+        returns = []
+        for s, a, r in reversed(episode_data):
+            G = gamma * G + r
+            returns.append((s, G))
+
+        returns.reverse()
+
+        # First-Visit MC update
+        visited = set()
+        for s, G in returns:
+            if s not in visited:
+                V[s] = V[s] + alpha * (G - V[s])
+                visited.add(s)
 
     return V
