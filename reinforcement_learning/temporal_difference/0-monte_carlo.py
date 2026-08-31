@@ -26,23 +26,25 @@ def monte_carlo(env, V, policy, episodes=5000, max_steps=100, alpha=0.1, gamma=0
         for _ in range(max_steps):
             action = policy(state)
             next_state, reward, terminated, truncated, _ = env.step(action)
-            episode_data.append((state, reward))
+            episode_data.append((state, reward, terminated or truncated))
 
             if terminated or truncated:
                 break
             state = next_state
 
-        # First-visit or every-visit Monte Carlo update (standard update per visited state)
+        # First-visit Monte Carlo update
         visited_states = set()
-        for t, (s, r) in enumerate(episode_data):
-            if s in visited_states:
-                continue
-            visited_states.add(s)
-
-            # Calculate return G
-            G = sum(gamma ** (i - t) * episode_data[i][1] for i in range(t, len(episode_data)))
+        G = 0
+        # Iterate backwards to compute returns easily
+        for t in range(len(episode_data) - 1, -1, -1):
+            s, r, done = episode_data[t]
+            # In standard first-visit MC for episodic tasks:
+            # If the episode ends with a hole or success, reward is given at the terminal step.
+            # Let's compute return correctly.
+            G = gamma * G + r
             
-            # Update value estimate
-            V[s] = V[s] + alpha * (G - V[s])
+            if s not in visited_states:
+                visited_states.add(s)
+                V[s] = V[s] + alpha * (G - V[s])
 
     return V
