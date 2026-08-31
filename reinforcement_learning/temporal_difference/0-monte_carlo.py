@@ -32,7 +32,7 @@ def monte_carlo(env, V, policy, episodes=5000, max_steps=100, alpha=0.1, gamma=0
                 break
             state = next_state
 
-        # First-visit Monte Carlo
+        # First-visit Monte Carlo update (geriyə doğru hesablanma)
         visited_states = set()
         G = 0
         for state, reward in reversed(episode_data):
