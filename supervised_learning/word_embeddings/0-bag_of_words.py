@@ -1,49 +1,48 @@
 #!/usr/bin/env python3
-"""
-Module to create a Bag of Words embedding matrix.
-"""
+"""Module to create a Bag of Words embedding matrix."""
+
 import numpy as np
 
 
 def bag_of_words(sentences, vocab=None):
-    """
-    Creates a bag of words embedding matrix.
+    """Creates a bag of words embedding matrix.
 
-    Parameters:
-    - sentences (list): List of sentences to analyze.
-    - vocab (list, optional): List of vocabulary words to use.
+    Args:
+        sentences: list of sentences to analyze.
+        vocab: list of the vocabulary words to use for the analysis.
+               If None, all words within sentences should be used.
 
     Returns:
-    - embeddings (numpy.ndarray): Matrix of shape (s, f).
-    - features (numpy.ndarray): Array of features used.
+        embeddings: numpy.ndarray of shape (s, f) containing the embeddings.
+        features: numpy.ndarray of the features used for embeddings.
     """
-    cleaned_sentences = []
-    all_words = set()
-
+    tokenized_sentences = []
     for sentence in sentences:
-        clean_s = sentence.lower().replace("'s", "")
-        clean_s = "".join(c if c.isalnum() else " " for c in clean_s)
-        words = clean_s.split()
-
-        cleaned_sentences.append(words)
-        all_words.update(words)
+        clean_sentence = sentence.lower().replace("'s", "")
+        words = []
+        for word in clean_sentence.split():
+            clean_word = "".join(c for c in word if c.isalnum())
+            if clean_word:
+                words.append(clean_word)
+        tokenized_sentences.append(words)
 
     if vocab is None:
-        features = sorted(list(all_words))
+        features = set()
+        for words in tokenized_sentences:
+            features.update(words)
+        features = sorted(list(features))
     else:
         features = list(vocab)
 
-    features = np.array(features)
-
+    feature_map = {word: i for i, word in enumerate(features)}
     s = len(sentences)
     f = len(features)
+
     embeddings = np.zeros((s, f), dtype=int)
 
-    feature_map = {word: idx for idx, word in enumerate(features)}
-
-    for i, words in enumerate(cleaned_sentences):
+    for i, words in enumerate(tokenized_sentences):
         for word in words:
             if word in feature_map:
                 embeddings[i, feature_map[word]] += 1
 
-    return embeddings, features
+    return embeddings, np.array(features)
