@@ -33,12 +33,10 @@ def monte_carlo(env, V, policy, episodes=5000, max_steps=100, alpha=0.1,
                 break
             state = next_state
 
-        visited_states = set()
         G = 0
+        # Every-visit Monte Carlo update (or standard backup)
         for state, reward in reversed(episode_data):
             G = gamma * G + reward
-            if state not in visited_states:
-                visited_states.add(state)
-                V[state] += alpha * (G - V[state])
+            V[state] += alpha * (G - V[state])
 
     return V
